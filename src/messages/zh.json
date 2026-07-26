@@ -231,7 +231,10 @@
     "logout": "退出登录",
     "loggingOut": "退出中...",
     "needLogin": "请先登录后查看个人中心。",
-    "loadError": "我的发布加载失败,请重试。"
+    "loadError": "我的发布加载失败,请重试。",
+    "delete": "删除",
+    "confirmDelete": "确定删除这条拼车行程吗？此操作不可恢复。",
+    "deleteFailed": "删除失败,请重试。"
   },
   "theme": {
     "light": "浅色模式",

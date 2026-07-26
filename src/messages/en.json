@@ -231,7 +231,10 @@
     "logout": "Log out",
     "loggingOut": "Logging out...",
     "needLogin": "Please log in to view your account.",
-    "loadError": "Failed to load your trips. Please try again."
+    "loadError": "Failed to load your trips. Please try again.",
+    "delete": "Delete",
+    "confirmDelete": "Delete this carpool trip? This cannot be undone.",
+    "deleteFailed": "Failed to delete. Please try again."
   },
   "theme": {
     "light": "Light mode",

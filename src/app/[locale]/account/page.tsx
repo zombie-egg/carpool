@@ -9,6 +9,7 @@ import {
   LogOut,
   Mail,
   ShieldCheck,
+  Trash2,
   UserRound,
   Users,
   Wallet,
@@ -75,6 +76,8 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteFailedId, setDeleteFailedId] = useState<string | null>(null);
 
   const loadMyTrips = useCallback(async () => {
     setLoading(true);
@@ -96,6 +99,26 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
   useEffect(() => {
     void loadMyTrips();
   }, [loadMyTrips]);
+
+  async function handleDeleteTrip(id: string) {
+    if (!window.confirm(t("confirmDelete"))) return;
+    setDeletingId(id);
+    setDeleteFailedId(null);
+    try {
+      const response = await fetch(`/api/carpool/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        setDeleteFailedId(id);
+        return;
+      }
+      setTrips((current) => current.filter((trip) => trip.id !== id));
+    } catch {
+      setDeleteFailedId(id);
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -213,12 +236,34 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
                       </span>
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={cn("shrink-0", STATUS_STYLES[trip.status])}
-                  >
-                    {tTrip(`status.${trip.status}`)}
-                  </Badge>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn("shrink-0", STATUS_STYLES[trip.status])}
+                      >
+                        {tTrip(`status.${trip.status}`)}
+                      </Badge>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={deletingId === trip.id}
+                        onClick={() => void handleDeleteTrip(trip.id)}
+                      >
+                        {deletingId === trip.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5" />
+                        )}
+                        {t("delete")}
+                      </Button>
+                    </div>
+                    {deleteFailedId === trip.id && (
+                      <p className="text-xs text-red-400">
+                        {t("deleteFailed")}
+                      </p>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
