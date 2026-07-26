@@ -24,7 +24,7 @@
   "filters": {
     "title": "Filter trips",
     "departLocation": "Departure location",
-    "departPlaceholder": "e.g. North Gate",
+    "departPlaceholder": "e.g. Living Area 2",
     "destination": "Destination",
     "destinationPlaceholder": "e.g. High-speed Rail Station",
     "date": "Departure date",
@@ -110,12 +110,9 @@
       "pastTime": "Departure time must be in the future."
     },
     "presets": {
-      "northGate": "North Gate",
-      "southGate": "South Gate",
-      "eastGate": "East Gate",
-      "library": "Library Plaza",
-      "dormitory": "Student Dormitory Area",
-      "gym": "University Gymnasium"
+      "areaOne": "Living Area 1",
+      "areaTwo": "Living Area 2",
+      "areaThree": "Living Area 3"
     }
   },
   "driver": {

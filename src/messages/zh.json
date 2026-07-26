@@ -24,7 +24,7 @@
   "filters": {
     "title": "筛选行程",
     "departLocation": "出发地点",
-    "departPlaceholder": "例如：北门",
+    "departPlaceholder": "例如：生活二区",
     "destination": "目的地",
     "destinationPlaceholder": "例如：高铁站",
     "date": "出发日期",
@@ -110,12 +110,9 @@
       "pastTime": "出发时间必须晚于当前时间。"
     },
     "presets": {
-      "northGate": "北门",
-      "southGate": "南门",
-      "eastGate": "东门",
-      "library": "图书馆广场",
-      "dormitory": "学生宿舍区",
-      "gym": "大学体育馆"
+      "areaOne": "生活一区",
+      "areaTwo": "生活二区",
+      "areaThree": "生活三区"
     }
   },
   "driver": {

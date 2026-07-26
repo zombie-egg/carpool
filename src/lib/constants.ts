@@ -3,12 +3,9 @@ export const LOCALE_STORAGE_KEY = "lian-carpool-locale";
 
 // Preset campus pickup points; values are translation keys under publish.presets.
 export const CAMPUS_PRESET_KEYS = [
-  "northGate",
-  "southGate",
-  "eastGate",
-  "library",
-  "dormitory",
-  "gym",
+  "areaTwo",
+  "areaOne",
+  "areaThree",
 ] as const;
 
 export type CampusPresetKey = (typeof CAMPUS_PRESET_KEYS)[number];
