@@ -210,10 +210,12 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
               {trips.map((trip) => (
                 <li
                   key={trip.id}
-                  className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0"
+                  className="flex items-center justify-between gap-3 py-4 first:pt-0 last:pb-0"
                 >
-                  <div className="space-y-1.5">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  {/* Left info column may wrap internally; the controls on the
+                      right never drop to their own row. */}
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
                       <span>{trip.departLocation}</span>
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{trip.destination}</span>
@@ -236,8 +238,8 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
                       </span>
                     </p>
                   </div>
-                  <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                       <Badge
                         variant="outline"
                         className={cn("shrink-0", STATUS_STYLES[trip.status])}
