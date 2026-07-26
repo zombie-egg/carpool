@@ -26,7 +26,7 @@ export default function HomePage() {
         <h1 className="mt-5 bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-4xl font-bold text-transparent sm:text-6xl">
           {t("title")}
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
+        <p className="mx-auto mt-4 text-center text-sm text-muted-foreground sm:text-base">
           {t("subtitle")}
         </p>
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
