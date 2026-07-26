@@ -100,8 +100,12 @@ model DriverInfo {
   dailyAvailableStart String
   /// Daily service window end, stored as "HH:mm".
   dailyAvailableEnd   String
-  /// Vehicle type: "sedan" | "suv" | "mpv" (7-seat MPV).
+  /// Vehicle type: preset ("sedan" | "suv" | "mpv") or free custom text.
   carType             String
+  /// Vehicle color (optional), shown next to the license plate.
+  carColor            String?
+  /// Optional promotion/discount info shown on the driver card.
+  discountInfo        String?
   /// Supplementary notes: trunk space, smoking permission, other reminders.
   carRemark           String?
   createdAt           DateTime @default(now())

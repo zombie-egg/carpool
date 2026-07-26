@@ -140,7 +140,13 @@
       "carType": "Vehicle type *",
       "carTypePlaceholder": "Select a vehicle type",
       "carRemark": "Vehicle notes",
-      "carRemarkPlaceholder": "Trunk space, smoking policy, other reminders..."
+      "carRemarkPlaceholder": "Trunk space, smoking policy, other reminders...",
+      "carTypeCustomOption": "Custom type...",
+      "carTypeCustomPlaceholder": "Type a vehicle type, e.g. Minivan",
+      "carColor": "Vehicle color (optional)",
+      "carColorPlaceholder": "e.g. White",
+      "discount": "Discount info (optional)",
+      "discountPlaceholder": "e.g. ¥2 off per person for groups of 5+ students"
     },
     "carTypes": {
       "sedan": "Sedan",

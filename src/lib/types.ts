@@ -48,7 +48,9 @@ export interface DriverInfoDTO {
   operationEndDate: string;
   dailyAvailableStart: string;
   dailyAvailableEnd: string;
-  carType: CarType;
+  carType: string;
+  carColor: string | null;
+  discountInfo: string | null;
   carRemark: string | null;
   createdAt: string;
 }
@@ -62,7 +64,9 @@ export interface DriverPayload {
   operationEndDate: string;
   dailyAvailableStart: string;
   dailyAvailableEnd: string;
-  carType: CarType;
+  carType: string;
+  carColor?: string;
+  discountInfo?: string;
   carRemark?: string;
 }
 

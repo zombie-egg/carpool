@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
+  BadgePercent,
   CalendarRange,
   Clock,
   MessageCircle,
@@ -23,6 +24,8 @@ import {
 } from "@/components/ui/card";
 import { DriverForm } from "@/components/features/driver-form";
 import type { DriverInfoDTO } from "@/lib/types";
+
+const PRESET_CAR_TYPES = ["sedan", "suv", "mpv"] as const;
 
 interface DriverListProps {
   drivers: DriverInfoDTO[];
@@ -96,13 +99,18 @@ export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
                   </CardTitle>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {driver.licensePlate}
+                    {driver.carColor && ` · ${driver.carColor}`}
                   </p>
                 </div>
                 <Badge
                   variant="outline"
                   className="border-sky-500/40 bg-sky-500/15 text-sky-400"
                 >
-                  {t(`carTypes.${driver.carType}`)}
+                  {(PRESET_CAR_TYPES as readonly string[]).includes(
+                    driver.carType
+                  )
+                    ? t(`carTypes.${driver.carType}`)
+                    : driver.carType}
                 </Badge>
               </CardHeader>
               <CardContent className="space-y-2.5 text-sm text-foreground/80">
@@ -133,6 +141,12 @@ export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
                     {driver.dailyAvailableEnd}
                   </span>
                 </div>
+                {driver.discountInfo && (
+                  <div className="flex items-start gap-2 font-medium text-amber-500">
+                    <BadgePercent className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{driver.discountInfo}</span>
+                  </div>
+                )}
                 {driver.carRemark && (
                   <div className="flex items-start gap-2 text-muted-foreground">
                     <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />

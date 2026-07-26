@@ -1,7 +1,6 @@
 import { PHONE_REGEX } from "@/lib/constants";
-import type { CarType, DriverPayload } from "@/lib/types";
+import type { DriverPayload } from "@/lib/types";
 
-const CAR_TYPES: ReadonlyArray<CarType> = ["sedan", "suv", "mpv"];
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 // Server-side validation shared by the create and update driver endpoints.
@@ -37,9 +36,8 @@ export function validateDriverPayload(payload: DriverPayload): string | null {
   if (payload.dailyAvailableEnd <= payload.dailyAvailableStart) {
     return "dailyAvailableEnd must be later than dailyAvailableStart";
   }
-  if (!CAR_TYPES.includes(payload.carType)) {
-    return "carType must be sedan, suv or mpv";
-  }
+  // Vehicle type accepts the presets or any custom text.
+  if (!payload.carType?.trim()) return "carType is required";
   return null;
 }
 
@@ -54,7 +52,9 @@ export function driverDataFromPayload(payload: DriverPayload) {
     operationEndDate: new Date(payload.operationEndDate),
     dailyAvailableStart: payload.dailyAvailableStart,
     dailyAvailableEnd: payload.dailyAvailableEnd,
-    carType: payload.carType,
+    carType: payload.carType.trim(),
+    carColor: payload.carColor?.trim() || null,
+    discountInfo: payload.discountInfo?.trim() || null,
     carRemark: payload.carRemark?.trim() || null,
   };
 }

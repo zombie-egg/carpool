@@ -17,18 +17,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { PHONE_REGEX } from "@/lib/constants";
 import type { CarType, DriverInfoDTO, DriverPayload } from "@/lib/types";
 
-const CAR_TYPES: ReadonlyArray<CarType> = ["sedan", "suv", "mpv"];
+const PRESET_CAR_TYPES: ReadonlyArray<CarType> = ["sedan", "suv", "mpv"];
+const CUSTOM_CAR_TYPE = "__custom__";
 
 interface DriverFormState {
   driverName: string;
   phone: string;
   wechat: string;
   licensePlate: string;
+  carColor: string;
   operationStartDate: string;
   operationEndDate: string;
   dailyAvailableStart: string;
   dailyAvailableEnd: string;
-  carType: CarType | "";
+  carTypePreset: string;
+  carTypeCustom: string;
+  discountInfo: string;
   carRemark: string;
 }
 
@@ -37,27 +41,38 @@ const EMPTY_STATE: DriverFormState = {
   phone: "",
   wechat: "",
   licensePlate: "",
+  carColor: "",
   operationStartDate: "",
   operationEndDate: "",
   dailyAvailableStart: "",
   dailyAvailableEnd: "",
-  carType: "",
+  carTypePreset: "",
+  carTypeCustom: "",
+  discountInfo: "",
   carRemark: "",
 };
 
-type DriverFieldErrors = Partial<Record<keyof DriverFormState, string>>;
+type DriverFieldErrors = Partial<
+  Record<keyof DriverFormState | "carType", string>
+>;
 
 function stateFromDriver(driver: DriverInfoDTO): DriverFormState {
+  const isPreset = (PRESET_CAR_TYPES as readonly string[]).includes(
+    driver.carType
+  );
   return {
     driverName: driver.driverName,
     phone: driver.phone,
     wechat: driver.wechat ?? "",
     licensePlate: driver.licensePlate,
+    carColor: driver.carColor ?? "",
     operationStartDate: driver.operationStartDate.slice(0, 10),
     operationEndDate: driver.operationEndDate.slice(0, 10),
     dailyAvailableStart: driver.dailyAvailableStart,
     dailyAvailableEnd: driver.dailyAvailableEnd,
-    carType: driver.carType,
+    carTypePreset: isPreset ? driver.carType : CUSTOM_CAR_TYPE,
+    carTypeCustom: isPreset ? "" : driver.carType,
+    discountInfo: driver.discountInfo ?? "",
     carRemark: driver.carRemark ?? "",
   };
 }
@@ -80,10 +95,18 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
   const [failed, setFailed] = useState(false);
 
   const isEdit = Boolean(initialDriver);
+  const idSuffix = initialDriver?.id ?? "new";
 
   const update = (patch: Partial<DriverFormState>) => {
     setForm((current) => ({ ...current, ...patch }));
   };
+
+  function resolveCarType(): string {
+    if (form.carTypePreset === CUSTOM_CAR_TYPE) {
+      return form.carTypeCustom.trim();
+    }
+    return form.carTypePreset;
+  }
 
   function validate(): DriverFieldErrors {
     const next: DriverFieldErrors = {};
@@ -114,7 +137,7 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
     ) {
       next.dailyAvailableEnd = t("errors.timeOrder");
     }
-    if (!form.carType) next.carType = t("errors.required");
+    if (!resolveCarType()) next.carType = t("errors.required");
     return next;
   }
 
@@ -123,18 +146,20 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
     setFailed(false);
     const nextErrors = validate();
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0 || form.carType === "") return;
+    if (Object.keys(nextErrors).length > 0) return;
 
     const payload: DriverPayload = {
       driverName: form.driverName.trim(),
       phone: form.phone.trim(),
       wechat: form.wechat.trim() || undefined,
       licensePlate: form.licensePlate.trim(),
+      carColor: form.carColor.trim() || undefined,
       operationStartDate: form.operationStartDate,
       operationEndDate: form.operationEndDate,
       dailyAvailableStart: form.dailyAvailableStart,
       dailyAvailableEnd: form.dailyAvailableEnd,
-      carType: form.carType,
+      carType: resolveCarType(),
+      discountInfo: form.discountInfo.trim() || undefined,
       carRemark: form.carRemark.trim() || undefined,
     };
 
@@ -176,11 +201,11 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor={`driverName-${initialDriver?.id ?? "new"}`}>
+          <Label htmlFor={`driverName-${idSuffix}`}>
             {t("fields.driverName")}
           </Label>
           <Input
-            id={`driverName-${initialDriver?.id ?? "new"}`}
+            id={`driverName-${idSuffix}`}
             value={form.driverName}
             placeholder={t("fields.driverNamePlaceholder")}
             onChange={(event) => update({ driverName: event.target.value })}
@@ -188,11 +213,9 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           {fieldError("driverName")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`phone-${initialDriver?.id ?? "new"}`}>
-            {t("fields.phone")}
-          </Label>
+          <Label htmlFor={`phone-${idSuffix}`}>{t("fields.phone")}</Label>
           <Input
-            id={`phone-${initialDriver?.id ?? "new"}`}
+            id={`phone-${idSuffix}`}
             value={form.phone}
             placeholder={t("fields.phonePlaceholder")}
             onChange={(event) => update({ phone: event.target.value })}
@@ -200,22 +223,51 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           {fieldError("phone")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`wechat-${initialDriver?.id ?? "new"}`}>
-            {t("fields.wechat")}
-          </Label>
+          <Label htmlFor={`wechat-${idSuffix}`}>{t("fields.wechat")}</Label>
           <Input
-            id={`wechat-${initialDriver?.id ?? "new"}`}
+            id={`wechat-${idSuffix}`}
             value={form.wechat}
             placeholder={t("fields.wechatPlaceholder")}
             onChange={(event) => update({ wechat: event.target.value })}
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`licensePlate-${initialDriver?.id ?? "new"}`}>
+          <Label>{t("fields.carType")}</Label>
+          <Select
+            value={form.carTypePreset}
+            onValueChange={(value) => update({ carTypePreset: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t("fields.carTypePlaceholder")} />
+            </SelectTrigger>
+            <SelectContent>
+              {PRESET_CAR_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {t(`carTypes.${type}`)}
+                </SelectItem>
+              ))}
+              <SelectItem value={CUSTOM_CAR_TYPE}>
+                {t("fields.carTypeCustomOption")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          {form.carTypePreset === CUSTOM_CAR_TYPE && (
+            <Input
+              value={form.carTypeCustom}
+              placeholder={t("fields.carTypeCustomPlaceholder")}
+              onChange={(event) =>
+                update({ carTypeCustom: event.target.value })
+              }
+            />
+          )}
+          {fieldError("carType")}
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`licensePlate-${idSuffix}`}>
             {t("fields.licensePlate")}
           </Label>
           <Input
-            id={`licensePlate-${initialDriver?.id ?? "new"}`}
+            id={`licensePlate-${idSuffix}`}
             value={form.licensePlate}
             placeholder={t("fields.licensePlatePlaceholder")}
             onChange={(event) => update({ licensePlate: event.target.value })}
@@ -223,11 +275,22 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           {fieldError("licensePlate")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`opStart-${initialDriver?.id ?? "new"}`}>
+          <Label htmlFor={`carColor-${idSuffix}`}>
+            {t("fields.carColor")}
+          </Label>
+          <Input
+            id={`carColor-${idSuffix}`}
+            value={form.carColor}
+            placeholder={t("fields.carColorPlaceholder")}
+            onChange={(event) => update({ carColor: event.target.value })}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`opStart-${idSuffix}`}>
             {t("fields.operationStart")}
           </Label>
           <Input
-            id={`opStart-${initialDriver?.id ?? "new"}`}
+            id={`opStart-${idSuffix}`}
             type="date"
             value={form.operationStartDate}
             onChange={(event) =>
@@ -237,11 +300,11 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           {fieldError("operationStartDate")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`opEnd-${initialDriver?.id ?? "new"}`}>
+          <Label htmlFor={`opEnd-${idSuffix}`}>
             {t("fields.operationEnd")}
           </Label>
           <Input
-            id={`opEnd-${initialDriver?.id ?? "new"}`}
+            id={`opEnd-${idSuffix}`}
             type="date"
             value={form.operationEndDate}
             onChange={(event) =>
@@ -251,11 +314,11 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           {fieldError("operationEndDate")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`dailyStart-${initialDriver?.id ?? "new"}`}>
+          <Label htmlFor={`dailyStart-${idSuffix}`}>
             {t("fields.dailyStart")}
           </Label>
           <Input
-            id={`dailyStart-${initialDriver?.id ?? "new"}`}
+            id={`dailyStart-${idSuffix}`}
             type="time"
             value={form.dailyAvailableStart}
             onChange={(event) =>
@@ -265,11 +328,11 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           {fieldError("dailyAvailableStart")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`dailyEnd-${initialDriver?.id ?? "new"}`}>
+          <Label htmlFor={`dailyEnd-${idSuffix}`}>
             {t("fields.dailyEnd")}
           </Label>
           <Input
-            id={`dailyEnd-${initialDriver?.id ?? "new"}`}
+            id={`dailyEnd-${idSuffix}`}
             type="time"
             value={form.dailyAvailableEnd}
             onChange={(event) =>
@@ -278,33 +341,24 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
           />
           {fieldError("dailyAvailableEnd")}
         </div>
-        <div className="space-y-1.5">
-          <Label>{t("fields.carType")}</Label>
-          <Select
-            value={form.carType}
-            onValueChange={(value) => update({ carType: value as CarType })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t("fields.carTypePlaceholder")} />
-            </SelectTrigger>
-            <SelectContent>
-              {CAR_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {t(`carTypes.${type}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {fieldError("carType")}
-        </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor={`carRemark-${initialDriver?.id ?? "new"}`}>
-          {t("fields.carRemark")}
+        <Label htmlFor={`discountInfo-${idSuffix}`}>
+          {t("fields.discount")}
         </Label>
+        <Input
+          id={`discountInfo-${idSuffix}`}
+          value={form.discountInfo}
+          placeholder={t("fields.discountPlaceholder")}
+          onChange={(event) => update({ discountInfo: event.target.value })}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor={`carRemark-${idSuffix}`}>{t("fields.carRemark")}</Label>
         <Textarea
-          id={`carRemark-${initialDriver?.id ?? "new"}`}
+          id={`carRemark-${idSuffix}`}
           rows={3}
           value={form.carRemark}
           placeholder={t("fields.carRemarkPlaceholder")}

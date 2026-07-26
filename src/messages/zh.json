@@ -140,7 +140,13 @@
       "carType": "车辆类型 *",
       "carTypePlaceholder": "请选择车辆类型",
       "carRemark": "车辆备注",
-      "carRemarkPlaceholder": "后备箱空间、是否可吸烟、其他提醒..."
+      "carRemarkPlaceholder": "后备箱空间、是否可吸烟、其他提醒...",
+      "carTypeCustomOption": "自定义类型...",
+      "carTypeCustomPlaceholder": "输入车辆类型，例如：面包车",
+      "carColor": "车辆颜色（选填）",
+      "carColorPlaceholder": "例如：白色",
+      "discount": "优惠信息（选填）",
+      "discountPlaceholder": "例如：学生5人以上每人立减2元"
     },
     "carTypes": {
       "sedan": "轿车",
