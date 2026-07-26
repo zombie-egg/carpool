@@ -10,6 +10,7 @@ import {
   TripFilters,
   type TripFilterValues,
 } from "@/components/features/trip-filters";
+import { locationMatches } from "@/lib/location-match";
 import type { CarpoolOrderDTO } from "@/lib/types";
 
 function toLocalDateString(iso: string): string {
@@ -25,17 +26,13 @@ function matchesFilters(
 ): boolean {
   if (
     filters.departLocation &&
-    !trip.departLocation
-      .toLowerCase()
-      .includes(filters.departLocation.trim().toLowerCase())
+    !locationMatches(trip.departLocation, filters.departLocation)
   ) {
     return false;
   }
   if (
     filters.destination &&
-    !trip.destination
-      .toLowerCase()
-      .includes(filters.destination.trim().toLowerCase())
+    !locationMatches(trip.destination, filters.destination)
   ) {
     return false;
   }

@@ -236,7 +236,7 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
                       </span>
                     </p>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
+                  <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
