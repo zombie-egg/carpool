@@ -16,7 +16,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { LOCALE_STORAGE_KEY } from "@/lib/constants";
-import { applyTheme, currentTheme, type AppTheme } from "@/lib/theme";
+import { applyTheme, THEME_STORAGE_KEY, type AppTheme } from "@/lib/theme";
 import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { useSession } from "@/components/features/use-session";
 
@@ -44,7 +44,8 @@ export function DockNav() {
   const [theme, setTheme] = useState<AppTheme>("dark");
 
   useEffect(() => {
-    setTheme(currentTheme());
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    setTheme(stored === "light" ? "light" : "dark");
   }, []);
 
   const toggleLocale = () => {

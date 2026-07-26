@@ -11,6 +11,7 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { DockNav } from "@/components/features/dock-nav";
 import { LocalePersistence } from "@/components/features/locale-persistence";
+import { ThemeSync } from "@/components/features/theme-sync";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -58,6 +59,7 @@ export default async function LocaleLayout({
           <div className="relative z-10">{children}</div>
           <DockNav />
           <LocalePersistence />
+          <ThemeSync />
         </NextIntlClientProvider>
       </body>
     </html>
