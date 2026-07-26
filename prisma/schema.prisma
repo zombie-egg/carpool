@@ -100,8 +100,6 @@ model DriverInfo {
   dailyAvailableStart String
   /// Daily service window end, stored as "HH:mm".
   dailyAvailableEnd   String
-  /// Fixed price per person per trip in RMB.
-  pricePerPerson      Decimal  @db.Decimal(10, 2)
   /// Vehicle type: "sedan" | "suv" | "mpv" (7-seat MPV).
   carType             String
   /// Supplementary notes: trunk space, smoking permission, other reminders.

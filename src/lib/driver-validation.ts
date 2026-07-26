@@ -37,13 +37,6 @@ export function validateDriverPayload(payload: DriverPayload): string | null {
   if (payload.dailyAvailableEnd <= payload.dailyAvailableStart) {
     return "dailyAvailableEnd must be later than dailyAvailableStart";
   }
-  if (
-    typeof payload.pricePerPerson !== "number" ||
-    Number.isNaN(payload.pricePerPerson) ||
-    payload.pricePerPerson < 0
-  ) {
-    return "pricePerPerson must be a non-negative number";
-  }
   if (!CAR_TYPES.includes(payload.carType)) {
     return "carType must be sedan, suv or mpv";
   }
@@ -61,7 +54,6 @@ export function driverDataFromPayload(payload: DriverPayload) {
     operationEndDate: new Date(payload.operationEndDate),
     dailyAvailableStart: payload.dailyAvailableStart,
     dailyAvailableEnd: payload.dailyAvailableEnd,
-    pricePerPerson: payload.pricePerPerson,
     carType: payload.carType,
     carRemark: payload.carRemark?.trim() || null,
   };

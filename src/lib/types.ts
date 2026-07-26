@@ -48,7 +48,6 @@ export interface DriverInfoDTO {
   operationEndDate: string;
   dailyAvailableStart: string;
   dailyAvailableEnd: string;
-  pricePerPerson: string;
   carType: CarType;
   carRemark: string | null;
   createdAt: string;
@@ -63,7 +62,6 @@ export interface DriverPayload {
   operationEndDate: string;
   dailyAvailableStart: string;
   dailyAvailableEnd: string;
-  pricePerPerson: number;
   carType: CarType;
   carRemark?: string;
 }

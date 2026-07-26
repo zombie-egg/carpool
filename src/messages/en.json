@@ -137,8 +137,6 @@
       "operationEnd": "Service end date *",
       "dailyStart": "Daily service from *",
       "dailyEnd": "Daily service until *",
-      "price": "Price per person per trip (¥) *",
-      "pricePlaceholder": "e.g. 20",
       "carType": "Vehicle type *",
       "carTypePlaceholder": "Select a vehicle type",
       "carRemark": "Vehicle notes",
@@ -167,11 +165,9 @@
     "loadError": "Failed to load drivers. Please try again.",
     "serviceDates": "Service period",
     "dailyWindow": "Daily hours",
-    "perTrip": "per person / trip",
     "errors": {
       "required": "This field is required.",
       "phone": "Please enter a valid 11-digit mobile number.",
-      "price": "Price must be a number greater than or equal to 0.",
       "dateOrder": "End date must not be earlier than start date.",
       "timeOrder": "Daily end time must be later than start time."
     }

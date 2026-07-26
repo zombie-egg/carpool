@@ -28,7 +28,6 @@ interface DriverFormState {
   operationEndDate: string;
   dailyAvailableStart: string;
   dailyAvailableEnd: string;
-  pricePerPerson: string;
   carType: CarType | "";
   carRemark: string;
 }
@@ -42,7 +41,6 @@ const EMPTY_STATE: DriverFormState = {
   operationEndDate: "",
   dailyAvailableStart: "",
   dailyAvailableEnd: "",
-  pricePerPerson: "",
   carType: "",
   carRemark: "",
 };
@@ -59,7 +57,6 @@ function stateFromDriver(driver: DriverInfoDTO): DriverFormState {
     operationEndDate: driver.operationEndDate.slice(0, 10),
     dailyAvailableStart: driver.dailyAvailableStart,
     dailyAvailableEnd: driver.dailyAvailableEnd,
-    pricePerPerson: String(Number(driver.pricePerPerson)),
     carType: driver.carType,
     carRemark: driver.carRemark ?? "",
   };
@@ -117,10 +114,6 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
     ) {
       next.dailyAvailableEnd = t("errors.timeOrder");
     }
-    const price = Number(form.pricePerPerson);
-    if (form.pricePerPerson === "" || Number.isNaN(price) || price < 0) {
-      next.pricePerPerson = t("errors.price");
-    }
     if (!form.carType) next.carType = t("errors.required");
     return next;
   }
@@ -141,7 +134,6 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
       operationEndDate: form.operationEndDate,
       dailyAvailableStart: form.dailyAvailableStart,
       dailyAvailableEnd: form.dailyAvailableEnd,
-      pricePerPerson: Number(form.pricePerPerson),
       carType: form.carType,
       carRemark: form.carRemark.trim() || undefined,
     };
@@ -285,23 +277,6 @@ export function DriverForm({ initialDriver, onSaved, onCancel }: DriverFormProps
             }
           />
           {fieldError("dailyAvailableEnd")}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor={`price-${initialDriver?.id ?? "new"}`}>
-            {t("fields.price")}
-          </Label>
-          <Input
-            id={`price-${initialDriver?.id ?? "new"}`}
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.pricePerPerson}
-            placeholder={t("fields.pricePlaceholder")}
-            onChange={(event) =>
-              update({ pricePerPerson: event.target.value })
-            }
-          />
-          {fieldError("pricePerPerson")}
         </div>
         <div className="space-y-1.5">
           <Label>{t("fields.carType")}</Label>

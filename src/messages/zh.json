@@ -137,8 +137,6 @@
       "operationEnd": "运营结束日期 *",
       "dailyStart": "每日服务开始时间 *",
       "dailyEnd": "每日服务结束时间 *",
-      "price": "每人每趟价格（¥）*",
-      "pricePlaceholder": "例如：20",
       "carType": "车辆类型 *",
       "carTypePlaceholder": "请选择车辆类型",
       "carRemark": "车辆备注",
@@ -167,11 +165,9 @@
     "loadError": "司机列表加载失败，请重试。",
     "serviceDates": "运营周期",
     "dailyWindow": "每日服务时间",
-    "perTrip": "每人/每趟",
     "errors": {
       "required": "该项为必填项。",
       "phone": "请输入有效的11位手机号码。",
-      "price": "价格须为大于等于0的数字。",
       "dateOrder": "结束日期不能早于开始日期。",
       "timeOrder": "每日结束时间必须晚于开始时间。"
     }

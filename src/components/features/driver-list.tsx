@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   CalendarRange,
   Clock,
-  CreditCard,
   MessageCircle,
   Pencil,
   Phone,
@@ -133,13 +132,6 @@ export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
                     {t("dailyWindow")}: {driver.dailyAvailableStart} –{" "}
                     {driver.dailyAvailableEnd}
                   </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-semibold text-emerald-400">
-                    ¥{Number(driver.pricePerPerson)}
-                  </span>
-                  <span className="text-muted-foreground">{t("perTrip")}</span>
                 </div>
                 {driver.carRemark && (
                   <div className="flex items-start gap-2 text-muted-foreground">
