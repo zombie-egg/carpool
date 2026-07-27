@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DriverForm } from "@/components/features/driver-form";
 import { DriverList } from "@/components/features/driver-list";
-import { LoginGate } from "@/components/features/login-gate";
+import { useSession } from "@/components/features/use-session";
 import type { DriverInfoDTO } from "@/lib/types";
 
 // Driver Management Center: add drivers and view/edit/delete existing records.
@@ -19,6 +19,8 @@ export default function DriverPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const { user, loading: sessionLoading } = useSession();
+  const isAdmin = user?.isAdmin === true;
 
   const loadDrivers = useCallback(async () => {
     setLoading(true);
@@ -53,10 +55,10 @@ export default function DriverPage() {
         className="mb-8"
       >
         <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
-          {t("title")}
+          {t(isAdmin ? "title" : "infoTitle")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          {t("subtitle")}
+          {t(isAdmin ? "subtitle" : "infoSubtitle")}
         </p>
       </motion.header>
 
@@ -67,29 +69,69 @@ export default function DriverPage() {
         </div>
       )}
 
-      <LoginGate message={t("needLogin")}>
-        {(user) =>
-          !user.isAdmin ? (
-            <div className="rounded-xl border border-border bg-card/70 px-6 py-16 text-center text-muted-foreground backdrop-blur">
-              {t("adminOnly")}
-            </div>
-          ) : (
-      <Tabs defaultValue="add">
-        <TabsList className="bg-card/80">
-          <TabsTrigger value="add">{t("tabs.add")}</TabsTrigger>
-          <TabsTrigger value="list">{t("tabs.list")}</TabsTrigger>
-        </TabsList>
+      {sessionLoading ? (
+        <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>{tCommon("loading")}</span>
+        </div>
+      ) : isAdmin ? (
+        <Tabs defaultValue="add">
+          <TabsList className="bg-card/80">
+            <TabsTrigger value="add">{t("tabs.add")}</TabsTrigger>
+            <TabsTrigger value="list">{t("tabs.list")}</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="add" className="mt-5">
-          <DriverForm
-            onSaved={(driver) => {
-              setDrivers((current) => [driver, ...current]);
-              showNotice(t("addSuccess"));
-            }}
-          />
-        </TabsContent>
+          <TabsContent value="add" className="mt-5">
+            <DriverForm
+              onSaved={(driver) => {
+                setDrivers((current) => [driver, ...current]);
+                showNotice(t("addSuccess"));
+              }}
+            />
+          </TabsContent>
 
-        <TabsContent value="list" className="mt-5">
+          <TabsContent value="list" className="mt-5">
+            {loading && (
+              <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>{tCommon("loading")}</span>
+              </div>
+            )}
+            {!loading && loadError && (
+              <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+                <p>{t("loadError")}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void loadDrivers()}
+                >
+                  {tCommon("retry")}
+                </Button>
+              </div>
+            )}
+            {!loading && !loadError && (
+              <DriverList
+                drivers={drivers}
+                onUpdated={(updated) => {
+                  setDrivers((current) =>
+                    current.map((driver) =>
+                      driver.id === updated.id ? updated : driver
+                    )
+                  );
+                  showNotice(t("updateSuccess"));
+                }}
+                onDeleted={(id) => {
+                  setDrivers((current) =>
+                    current.filter((driver) => driver.id !== id)
+                  );
+                  showNotice(t("deleteSuccess"));
+                }}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div>
           {loading && (
             <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -108,30 +150,9 @@ export default function DriverPage() {
               </Button>
             </div>
           )}
-          {!loading && !loadError && (
-            <DriverList
-              drivers={drivers}
-              onUpdated={(updated) => {
-                setDrivers((current) =>
-                  current.map((driver) =>
-                    driver.id === updated.id ? updated : driver
-                  )
-                );
-                showNotice(t("updateSuccess"));
-              }}
-              onDeleted={(id) => {
-                setDrivers((current) =>
-                  current.filter((driver) => driver.id !== id)
-                );
-                showNotice(t("deleteSuccess"));
-              }}
-            />
-          )}
-        </TabsContent>
-      </Tabs>
-          )
-        }
-      </LoginGate>
+          {!loading && !loadError && <DriverList drivers={drivers} readOnly />}
+        </div>
+      )}
     </main>
   );
 }

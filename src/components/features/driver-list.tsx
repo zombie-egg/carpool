@@ -29,12 +29,18 @@ const PRESET_CAR_TYPES = ["sedan", "suv", "mpv"] as const;
 
 interface DriverListProps {
   drivers: DriverInfoDTO[];
-  onUpdated: (driver: DriverInfoDTO) => void;
-  onDeleted: (id: string) => void;
+  readOnly?: boolean;
+  onUpdated?: (driver: DriverInfoDTO) => void;
+  onDeleted?: (id: string) => void;
 }
 
 // Driver cards with inline edit and delete actions.
-export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
+export function DriverList({
+  drivers,
+  readOnly = false,
+  onUpdated,
+  onDeleted,
+}: DriverListProps) {
   const t = useTranslations("driver");
   const locale = useLocale();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -56,7 +62,7 @@ export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
         setFailedId(id);
         return;
       }
-      onDeleted(id);
+      onDeleted?.(id);
     } catch {
       setFailedId(id);
     } finally {
@@ -65,18 +71,22 @@ export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
   }
 
   if (drivers.length === 0) {
-    return <p className="py-16 text-center text-muted-foreground">{t("empty")}</p>;
+    return (
+      <p className="py-16 text-center text-muted-foreground">
+        {t(readOnly ? "publicEmpty" : "empty")}
+      </p>
+    );
   }
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       {drivers.map((driver) =>
-        editingId === driver.id ? (
+        !readOnly && editingId === driver.id ? (
           <div key={driver.id} className="lg:col-span-2">
             <DriverForm
               initialDriver={driver}
               onSaved={(updated) => {
-                onUpdated(updated);
+                onUpdated?.(updated);
                 setEditingId(null);
               }}
               onCancel={() => setEditingId(null)}
@@ -154,32 +164,36 @@ export function DriverList({ drivers, onUpdated, onDeleted }: DriverListProps) {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="flex-col items-stretch gap-2">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setEditingId(driver.id)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    {t("actions.edit")}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="flex-1"
-                    disabled={deletingId === driver.id}
-                    onClick={() => void handleDelete(driver.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    {t("actions.delete")}
-                  </Button>
-                </div>
-                {failedId === driver.id && (
-                  <p className="text-center text-xs text-red-400">{t("fail")}</p>
-                )}
-              </CardFooter>
+              {!readOnly && (
+                <CardFooter className="flex-col items-stretch gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setEditingId(driver.id)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      {t("actions.edit")}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
+                      disabled={deletingId === driver.id}
+                      onClick={() => void handleDelete(driver.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {t("actions.delete")}
+                    </Button>
+                  </div>
+                  {failedId === driver.id && (
+                    <p className="text-center text-xs text-red-400">
+                      {t("fail")}
+                    </p>
+                  )}
+                </CardFooter>
+              )}
             </Card>
           </motion.div>
         )

@@ -8,6 +8,7 @@
     "publish": "Publish Carpool",
     "list": "All Carpool Trips",
     "driver": "Driver Management Center",
+    "driverInfo": "Active Drivers",
     "language": "切换到中文",
     "account": "My Account",
     "login": "Log in",
@@ -111,6 +112,8 @@
   "driver": {
     "title": "Driver Management Center",
     "subtitle": "Register campus drivers and keep their service info up to date.",
+    "infoTitle": "Active Drivers",
+    "infoSubtitle": "View active drivers and service information published by the administrator.",
     "needLogin": "Please log in before managing driver records.",
     "adminOnly": "Only the administrator account can manage driver records.",
     "tabs": {
@@ -161,6 +164,7 @@
     "deleteSuccess": "Driver deleted.",
     "fail": "Operation failed. Please try again.",
     "empty": "No drivers registered yet. Add the first one!",
+    "publicEmpty": "No active driver information is available.",
     "loadError": "Failed to load drivers. Please try again.",
     "serviceDates": "Service period",
     "dailyWindow": "Daily hours",

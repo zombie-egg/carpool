@@ -67,9 +67,15 @@ export function DockNav() {
       <div className="pointer-events-auto">
         <Dock className="items-end">
           {NAV_ENTRIES.map(({ key, href, Icon }) => (
-            <Link key={key} href={href} aria-label={t(key)}>
+            <Link
+              key={key}
+              href={href}
+              aria-label={t(key === "driver" && !user?.isAdmin ? "driverInfo" : key)}
+            >
               <DockItem>
-                <DockLabel>{t(key)}</DockLabel>
+                <DockLabel>
+                  {t(key === "driver" && !user?.isAdmin ? "driverInfo" : key)}
+                </DockLabel>
                 <DockIcon>
                   <Icon className={iconClass} />
                 </DockIcon>

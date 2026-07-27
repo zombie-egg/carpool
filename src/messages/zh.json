@@ -8,6 +8,7 @@
     "publish": "发布拼车",
     "list": "全部拼车行程",
     "driver": "司机管理中心",
+    "driverInfo": "在职司机信息",
     "language": "Switch to English",
     "account": "个人账户",
     "login": "登录",
@@ -111,6 +112,8 @@
   "driver": {
     "title": "司机管理中心",
     "subtitle": "登记校园司机并维护服务信息。",
+    "infoTitle": "在职司机信息",
+    "infoSubtitle": "查看管理员发布的在职司机及服务信息。",
     "needLogin": "管理司机信息前请先登录你的账户。",
     "adminOnly": "只有管理员账号才能管理司机信息。",
     "tabs": {
@@ -161,6 +164,7 @@
     "deleteSuccess": "司机已删除。",
     "fail": "操作失败，请重试。",
     "empty": "暂无司机记录，快来添加第一位司机吧！",
+    "publicEmpty": "暂无在职司机信息。",
     "loadError": "司机列表加载失败，请重试。",
     "serviceDates": "运营周期",
     "dailyWindow": "每日服务时间",
