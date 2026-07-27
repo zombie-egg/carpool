@@ -227,8 +227,8 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
-                        {t("seats", {
-                          count: trip.remainingSeats,
+                        {t("occupancy", {
+                          count: trip.totalSeats - trip.remainingSeats,
                           total: trip.totalSeats,
                         })}
                       </span>

@@ -58,6 +58,7 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
       : totalPrice;
 
   const canJoin = trip.status === "recruiting" && trip.remainingSeats > 0;
+  const riderCount = trip.totalSeats - trip.remainingSeats;
   const showWechat = trip.contactType !== "phone" && trip.wechatId;
   const showPhone = trip.contactType !== "wechat" && trip.phoneNumber;
 
@@ -125,8 +126,8 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
           <div className="flex h-6 items-center gap-2 text-foreground/80">
             <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
             <span>
-              {t("remaining", {
-                count: trip.remainingSeats,
+              {t("occupancy", {
+                count: riderCount,
                 total: trip.totalSeats,
               })}
             </span>

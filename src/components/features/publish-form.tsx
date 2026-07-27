@@ -82,7 +82,7 @@ export function PublishForm({ defaultOrganizer }: PublishFormProps) {
     if (
       form.totalSeats === "" ||
       !Number.isInteger(seats) ||
-      seats < 1 ||
+      seats < 2 ||
       seats > 50
     ) {
       next.totalSeats = t("errors.seats");
@@ -236,7 +236,7 @@ export function PublishForm({ defaultOrganizer }: PublishFormProps) {
           <Input
             id="totalSeats"
             type="number"
-            min="1"
+            min="2"
             max="50"
             value={form.totalSeats}
             placeholder={t("seatsPlaceholder")}

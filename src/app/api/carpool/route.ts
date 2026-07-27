@@ -17,10 +17,10 @@ function validatePayload(payload: CarpoolCreatePayload): string | null {
   }
   if (
     !Number.isInteger(payload.totalSeats) ||
-    payload.totalSeats < 1 ||
+    payload.totalSeats < 2 ||
     payload.totalSeats > 50
   ) {
-    return "totalSeats must be an integer between 1 and 50";
+    return "totalSeats must be an integer between 2 and 50";
   }
   if (
     typeof payload.totalPrice !== "number" ||
@@ -103,7 +103,8 @@ export async function POST(request: NextRequest) {
         destination: payload.destination.trim(),
         departTime: new Date(payload.departTime),
         totalSeats: payload.totalSeats,
-        remainingSeats: payload.totalSeats,
+        // The organizer is the first rider and occupies one seat immediately.
+        remainingSeats: payload.totalSeats - 1,
         totalPrice: payload.totalPrice,
         organizerId: user.id,
         contactType: payload.contactType,

@@ -53,9 +53,9 @@ model CarpoolOrder {
   destination    String
   /// Exact departure date and time.
   departTime     DateTime
-  /// Total seats offered by the vehicle.
+  /// Total rider capacity, including the organizer.
   totalSeats     Int
-  /// Seats still available; decremented atomically when a passenger joins.
+  /// Seats still available after counting the organizer; decremented when a passenger joins.
   remainingSeats Int
   /// TOTAL price of the whole trip in RMB; passengers split it, so the
   /// per-person share depends on how many people finally join.
