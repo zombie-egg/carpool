@@ -24,9 +24,9 @@
   "filters": {
     "title": "Filter trips",
     "departLocation": "Departure location",
-    "departPlaceholder": "e.g. Living Area 2",
+    "departPlaceholder": "Living Area 2 / 生活二区",
     "destination": "Destination",
-    "destinationPlaceholder": "e.g. High-speed Rail Station",
+    "destinationPlaceholder": "Railway Station / 高铁站",
     "date": "Departure date",
     "minPrice": "Min total price (¥)",
     "maxPrice": "Max total price (¥)",
@@ -71,9 +71,7 @@
     "organizerName": "Organizer nickname *",
     "organizerPlaceholder": "How should passengers call you?",
     "departLocation": "Departure location *",
-    "presetLabel": "Campus pickup points",
-    "customOption": "Custom location...",
-    "customPlaceholder": "Type a custom departure location",
+    "departLocationPlaceholder": "e.g. North Gate, Living Area 2",
     "destination": "Destination *",
     "destinationPlaceholder": "e.g. Li'an East Railway Station",
     "departDate": "Departure date *",
@@ -108,11 +106,6 @@
       "wechatRequired": "Please fill in your WeChat ID.",
       "phoneRequired": "Please fill in your phone number.",
       "pastTime": "Departure time must be in the future."
-    },
-    "presets": {
-      "areaOne": "Living Area 1",
-      "areaTwo": "Living Area 2",
-      "areaThree": "Living Area 3"
     }
   },
   "driver": {

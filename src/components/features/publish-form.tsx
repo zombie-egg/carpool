@@ -9,23 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CAMPUS_PRESET_KEYS, PHONE_REGEX } from "@/lib/constants";
+import { PHONE_REGEX } from "@/lib/constants";
 import type { CarpoolCreatePayload, ContactType } from "@/lib/types";
-
-const CUSTOM_LOCATION = "__custom__";
 
 interface FormState {
   organizerName: string;
-  presetLocation: string;
-  customLocation: string;
+  departLocation: string;
   destination: string;
   departDate: string;
   departTime: string;
@@ -40,8 +30,7 @@ interface FormState {
 
 const INITIAL_STATE: FormState = {
   organizerName: "",
-  presetLocation: "",
-  customLocation: "",
+  departLocation: "",
   destination: "",
   departDate: "",
   departTime: "",
@@ -76,17 +65,10 @@ export function PublishForm({ defaultOrganizer }: PublishFormProps) {
     setForm((current) => ({ ...current, ...patch }));
   };
 
-  function resolveDepartLocation(): string {
-    if (form.presetLocation === CUSTOM_LOCATION) {
-      return form.customLocation.trim();
-    }
-    return form.presetLocation;
-  }
-
   function validate(): FieldErrors {
     const next: FieldErrors = {};
     if (!form.organizerName.trim()) next.organizerName = t("errors.required");
-    if (!resolveDepartLocation()) next.presetLocation = t("errors.required");
+    if (!form.departLocation.trim()) next.departLocation = t("errors.required");
     if (!form.destination.trim()) next.destination = t("errors.required");
     if (!form.departDate) next.departDate = t("errors.required");
     if (!form.departTime) next.departTime = t("errors.required");
@@ -141,7 +123,7 @@ export function PublishForm({ defaultOrganizer }: PublishFormProps) {
 
     const payload: CarpoolCreatePayload = {
       organizerName: form.organizerName.trim(),
-      departLocation: resolveDepartLocation(),
+      departLocation: form.departLocation.trim(),
       destination: form.destination.trim(),
       departTime: new Date(
         `${form.departDate}T${form.departTime}`
@@ -202,35 +184,16 @@ export function PublishForm({ defaultOrganizer }: PublishFormProps) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label>{t("departLocation")}</Label>
-          <Select
-            value={form.presetLocation}
-            onValueChange={(value) => update({ presetLocation: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t("presetLabel")} />
-            </SelectTrigger>
-            <SelectContent>
-              {CAMPUS_PRESET_KEYS.map((key) => (
-                <SelectItem key={key} value={t(`presets.${key}`)}>
-                  {t(`presets.${key}`)}
-                </SelectItem>
-              ))}
-              <SelectItem value={CUSTOM_LOCATION}>
-                {t("customOption")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          {form.presetLocation === CUSTOM_LOCATION && (
-            <Input
-              value={form.customLocation}
-              placeholder={t("customPlaceholder")}
-              onChange={(event) =>
-                update({ customLocation: event.target.value })
-              }
-            />
-          )}
-          {fieldError("presetLocation")}
+          <Label htmlFor="departLocation">{t("departLocation")}</Label>
+          <Input
+            id="departLocation"
+            value={form.departLocation}
+            placeholder={t("departLocationPlaceholder")}
+            onChange={(event) =>
+              update({ departLocation: event.target.value })
+            }
+          />
+          {fieldError("departLocation")}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="destination">{t("destination")}</Label>

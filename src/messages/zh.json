@@ -24,9 +24,9 @@
   "filters": {
     "title": "筛选行程",
     "departLocation": "出发地点",
-    "departPlaceholder": "例如：生活二区",
+    "departPlaceholder": "生活二区 / Living Area 2",
     "destination": "目的地",
-    "destinationPlaceholder": "例如：高铁站",
+    "destinationPlaceholder": "高铁站 / Railway Station",
     "date": "出发日期",
     "minPrice": "总价下限（¥）",
     "maxPrice": "总价上限（¥）",
@@ -71,9 +71,7 @@
     "organizerName": "发起人昵称 *",
     "organizerPlaceholder": "乘客如何称呼你？",
     "departLocation": "出发地点 *",
-    "presetLabel": "校内上车点",
-    "customOption": "自定义地点...",
-    "customPlaceholder": "输入自定义出发地点",
+    "departLocationPlaceholder": "例如：生活二区北门",
     "destination": "目的地 *",
     "destinationPlaceholder": "例如：黎安东站",
     "departDate": "出发日期 *",
@@ -108,11 +106,6 @@
       "wechatRequired": "请填写微信号。",
       "phoneRequired": "请填写手机号。",
       "pastTime": "出发时间必须晚于当前时间。"
-    },
-    "presets": {
-      "areaOne": "生活一区",
-      "areaTwo": "生活二区",
-      "areaThree": "生活三区"
     }
   },
   "driver": {
