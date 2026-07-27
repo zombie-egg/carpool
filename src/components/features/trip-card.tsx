@@ -88,14 +88,15 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
 
   return (
     <motion.div
+      className="h-full"
       layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.25 }}
     >
-      <Card className="h-full border-border bg-card/70 backdrop-blur">
-        <CardHeader className="flex-row items-start justify-between space-y-0 pb-4">
+      <Card className="flex h-full flex-col border-border bg-card/70 backdrop-blur">
+        <CardHeader className="min-h-[4.25rem] flex-row items-start justify-between space-y-0 pb-4">
           <div className="flex items-center gap-2 text-sm">
             <User className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-foreground">
@@ -109,20 +110,20 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
             {t(`status.${trip.status}`)}
           </Badge>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-            <span>{trip.departLocation}</span>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>{trip.destination}</span>
+        <CardContent className="flex-1 space-y-3 text-sm">
+          <div className="flex h-12 items-start gap-2 overflow-hidden text-base font-semibold text-foreground">
+            <span className="line-clamp-2">{trip.departLocation}</span>
+            <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="line-clamp-2">{trip.destination}</span>
           </div>
-          <div className="flex items-center gap-2 text-foreground/80">
-            <CalendarClock className="h-4 w-4 text-muted-foreground" />
-            <span>
+          <div className="flex h-10 items-start gap-2 overflow-hidden text-foreground/80">
+            <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="line-clamp-2">
               {t("departAt")}: {departFormatted}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-foreground/80">
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <div className="flex h-6 items-center gap-2 text-foreground/80">
+            <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
             <span>
               {t("remaining", {
                 count: trip.remainingSeats,
@@ -130,7 +131,7 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
               })}
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex h-10 flex-wrap content-start items-center gap-x-3 gap-y-1 overflow-hidden">
             <span className="inline-flex items-center gap-2">
               <Wallet className="h-4 w-4 text-muted-foreground" />
               <span className="text-base font-semibold text-emerald-500">
@@ -141,7 +142,7 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
               {t("perSeatEstimate", { price: perSeatWhenFull })}
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-foreground/80">
+          <div className="flex h-10 flex-wrap content-start items-center gap-x-4 gap-y-1 overflow-hidden text-foreground/80">
             {showWechat && (
               <span className="inline-flex items-center gap-1.5">
                 <MessageCircle className="h-4 w-4 text-muted-foreground" />
@@ -155,12 +156,16 @@ export function TripCard({ trip, onJoined }: TripCardProps) {
               </span>
             )}
           </div>
-          {trip.remark && (
-            <div className="flex items-start gap-2 text-muted-foreground">
-              <StickyNote className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{trip.remark}</span>
-            </div>
-          )}
+          <div
+            className={cn(
+              "flex h-10 items-start gap-2 overflow-hidden text-muted-foreground",
+              !trip.remark && "invisible"
+            )}
+            aria-hidden={!trip.remark}
+          >
+            <StickyNote className="mt-0.5 h-4 w-4 shrink-0" />
+            <span className="line-clamp-2">{trip.remark || "placeholder"}</span>
+          </div>
         </CardContent>
         <CardFooter className="flex-col items-stretch gap-2">
           <Button
