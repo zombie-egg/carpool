@@ -11,7 +11,7 @@ A bilingual (中文 / English) full-stack campus carpool platform for Li'an Univ
 | Route | Module |
 |---|---|
 | `/zh`, `/en` | Homepage: filterable grid of all carpool trips + one-click **Join** (atomically decrements remaining seats) |
-| `/zh/publish` | Publish a carpool trip (validated bilingual form, preset campus pickup points + custom input) |
+| `/zh/publish` | Publish a carpool trip (validated bilingual form with custom departure and destination inputs) |
 | `/zh/carpool-list` | All carpool trips with the same filter panel |
 | `/zh/driver` | Driver Management Center: add / edit / delete driver records (tabbed UI) |
 | `/zh/login`, `/zh/register` | Email-based accounts: a 6-digit code is emailed via SMTP on signup; publishing/joining/driver management require login |
