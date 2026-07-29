@@ -4,6 +4,41 @@ import { getSessionUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
+// GET /api/carpool/:id — organizer/admin view with participant contacts.
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    const trip = await prisma.carpoolOrder.findUnique({
+      where: { id: params.id },
+      include: {
+        organizer: { select: { id: true, nickname: true, email: true } },
+        participants: {
+          include: {
+            user: { select: { id: true, nickname: true, email: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    if (!trip) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    if (trip.organizerId !== user.id && !user.isAdmin) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+    return NextResponse.json(trip);
+  } catch (error) {
+    console.error(`GET /api/carpool/${params.id} failed:`, error);
+    return NextResponse.json({ error: "load_failed" }, { status: 500 });
+  }
+}
+
 // DELETE /api/carpool/:id — remove a trip. Only its organizer (or the admin)
 // may delete it.
 export async function DELETE(

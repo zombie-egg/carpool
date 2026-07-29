@@ -37,6 +37,41 @@ export interface CarpoolCreatePayload {
   remark?: string;
 }
 
+export interface TripJoinPayload {
+  partySize: number;
+  contactType: "wechat" | "phone";
+  contactValue: string;
+}
+
+export interface TripParticipationDTO {
+  id: string;
+  partySize: number;
+  contactType: "wechat" | "phone";
+  contactValue: string;
+  createdAt: string;
+  user: {
+    id: string;
+    nickname: string;
+    email: string;
+  };
+}
+
+export interface JoinedTripDTO {
+  id: string;
+  partySize: number;
+  contactType: "wechat" | "phone";
+  contactValue: string;
+  createdAt: string;
+  trip: CarpoolOrderDTO & {
+    organizer: { nickname: string; email: string } | null;
+  };
+}
+
+export interface TripDetailDTO extends CarpoolOrderDTO {
+  organizer: { id: string; nickname: string; email: string } | null;
+  participants: TripParticipationDTO[];
+}
+
 // DriverInfo as serialized over JSON.
 export interface DriverInfoDTO {
   id: string;
@@ -81,4 +116,3 @@ export interface SessionUserDTO {
   nickname: string;
   isAdmin: boolean;
 }
-

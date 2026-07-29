@@ -5,14 +5,18 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   CalendarClock,
+  Eye,
   Loader2,
   LogOut,
   Mail,
+  MessageCircle,
+  Phone,
   ShieldCheck,
   Trash2,
   UserRound,
   Users,
   Wallet,
+  X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -26,7 +30,12 @@ import {
 } from "@/components/ui/card";
 import { LoginGate } from "@/components/features/login-gate";
 import { cn } from "@/lib/utils";
-import type { CarpoolOrderDTO, TripStatus } from "@/lib/types";
+import type {
+  CarpoolOrderDTO,
+  JoinedTripDTO,
+  TripDetailDTO,
+  TripStatus,
+} from "@/lib/types";
 
 const STATUS_STYLES: Record<TripStatus, string> = {
   recruiting: "border-emerald-500/40 bg-emerald-500/15 text-emerald-500",
@@ -69,6 +78,7 @@ interface AccountContentProps {
 function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProps) {
   const t = useTranslations("account");
   const tTrip = useTranslations("trip");
+  const tDetail = useTranslations("tripDetail");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
@@ -78,6 +88,14 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
   const [loggingOut, setLoggingOut] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteFailedId, setDeleteFailedId] = useState<string | null>(null);
+  const [joinedTrips, setJoinedTrips] = useState<JoinedTripDTO[]>([]);
+  const [joinedLoading, setJoinedLoading] = useState(true);
+  const [joinedLoadError, setJoinedLoadError] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelFailedId, setCancelFailedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<TripDetailDTO | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState(false);
 
   const loadMyTrips = useCallback(async () => {
     setLoading(true);
@@ -99,6 +117,61 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
   useEffect(() => {
     void loadMyTrips();
   }, [loadMyTrips]);
+
+  const loadJoinedTrips = useCallback(async () => {
+    setJoinedLoading(true);
+    setJoinedLoadError(false);
+    try {
+      const response = await fetch("/api/carpool/joined", { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setJoinedTrips((await response.json()) as JoinedTripDTO[]);
+    } catch {
+      setJoinedLoadError(true);
+    } finally {
+      setJoinedLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadJoinedTrips();
+  }, [loadJoinedTrips]);
+
+  async function handleCancelJoin(participation: JoinedTripDTO) {
+    if (!window.confirm(t("confirmCancelJoin"))) return;
+    setCancellingId(participation.id);
+    setCancelFailedId(null);
+    try {
+      const response = await fetch(`/api/carpool/${participation.trip.id}/join`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        setCancelFailedId(participation.id);
+        return;
+      }
+      setJoinedTrips((current) =>
+        current.filter((item) => item.id !== participation.id)
+      );
+    } catch {
+      setCancelFailedId(participation.id);
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
+  async function openTripDetail(id: string) {
+    setDetail(null);
+    setDetailError(false);
+    setDetailLoading(true);
+    try {
+      const response = await fetch(`/api/carpool/${id}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setDetail((await response.json()) as TripDetailDTO);
+    } catch {
+      setDetailError(true);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
 
   async function handleDeleteTrip(id: string) {
     if (!window.confirm(t("confirmDelete"))) return;
@@ -247,6 +320,14 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
                         {tTrip(`status.${trip.status}`)}
                       </Badge>
                       <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void openTripDetail(trip.id)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        {t("viewDetails")}
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         disabled={deletingId === trip.id}
@@ -272,6 +353,113 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
           )}
         </CardContent>
       </Card>
+
+      <Card className="border-border bg-card/70 backdrop-blur">
+        <CardHeader>
+          <CardTitle>{t("joinedTrips")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {joinedLoading && (
+            <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>{tCommon("loading")}</span>
+            </div>
+          )}
+          {!joinedLoading && joinedLoadError && (
+            <div className="flex flex-col items-center gap-3 py-10 text-muted-foreground">
+              <p>{t("joinedLoadError")}</p>
+              <Button variant="outline" size="sm" onClick={() => void loadJoinedTrips()}>
+                {tCommon("retry")}
+              </Button>
+            </div>
+          )}
+          {!joinedLoading && !joinedLoadError && joinedTrips.length === 0 && (
+            <p className="py-10 text-center text-muted-foreground">{t("noJoinedTrips")}</p>
+          )}
+          {!joinedLoading && !joinedLoadError && joinedTrips.length > 0 && (
+            <ul className="divide-y divide-border">
+              {joinedTrips.map((participation) => {
+                const trip = participation.trip;
+                const organizerContact =
+                  trip.contactType === "phone"
+                    ? trip.phoneNumber
+                    : trip.wechatId || trip.phoneNumber;
+                return (
+                  <li key={participation.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
+                        <span>{trip.departLocation}</span>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>{trip.destination}</span>
+                      </p>
+                      <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" />{dateFormatter.format(new Date(trip.departTime))}</span>
+                        <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{t("joinedPartySize", { count: participation.partySize })}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("organizerInfo", { name: trip.organizer?.nickname || trip.organizerName })}
+                        {organizerContact ? ` · ${organizerContact}` : ""}
+                        {trip.organizer?.email ? ` · ${trip.organizer.email}` : ""}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <Button variant="outline" size="sm" disabled={cancellingId === participation.id} onClick={() => void handleCancelJoin(participation)}>
+                        {cancellingId === participation.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                        {cancellingId === participation.id ? t("cancellingJoin") : t("cancelJoin")}
+                      </Button>
+                      {cancelFailedId === participation.id && <p className="mt-1 text-xs text-red-400">{t("cancelJoinFailed")}</p>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {(detailLoading || detailError || detail) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" onMouseDown={(event) => { if (event.target === event.currentTarget && !detailLoading) { setDetail(null); setDetailError(false); } }}>
+          <Card className="max-h-[85vh] w-full max-w-xl overflow-y-auto border-border bg-card shadow-2xl">
+            <CardHeader className="flex-row items-start justify-between space-y-0">
+              <CardTitle>{tDetail("title")}</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => { setDetail(null); setDetailError(false); }} aria-label={tDetail("close")}><X className="h-4 w-4" /></Button>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {detailLoading && <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+              {detailError && <p className="py-10 text-center text-red-400">{tDetail("loadError")}</p>}
+              {detail && <TripDetailContent detail={detail} dateFormatter={dateFormatter} />}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
+  );
+}
+
+function TripDetailContent({ detail, dateFormatter }: { detail: TripDetailDTO; dateFormatter: Intl.DateTimeFormat }) {
+  const t = useTranslations("tripDetail");
+  const tTrip = useTranslations("trip");
+  return (
+    <>
+      <div className="space-y-1 rounded-lg border border-border p-4">
+        <p className="font-semibold">{detail.departLocation} <ArrowRight className="mx-1 inline h-4 w-4" /> {detail.destination}</p>
+        <p className="text-sm text-muted-foreground"><CalendarClock className="mr-1 inline h-4 w-4" />{dateFormatter.format(new Date(detail.departTime))}</p>
+      </div>
+      <section className="space-y-2">
+        <h3 className="font-semibold">{t("organizer")}</h3>
+        <div className="rounded-lg border border-border p-3 text-sm text-muted-foreground">
+          <p className="text-foreground">{detail.organizer?.nickname || detail.organizerName}</p>
+          {detail.organizer?.email && <p><Mail className="mr-1 inline h-3.5 w-3.5" />{detail.organizer.email}</p>}
+          {detail.wechatId && <p><MessageCircle className="mr-1 inline h-3.5 w-3.5" />{tTrip("wechat")}: {detail.wechatId}</p>}
+          {detail.phoneNumber && <p><Phone className="mr-1 inline h-3.5 w-3.5" />{tTrip("phone")}: {detail.phoneNumber}</p>}
+        </div>
+      </section>
+      <section className="space-y-2">
+        <h3 className="font-semibold">{t("participants")}</h3>
+        {detail.participants.length === 0 ? <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">{t("noParticipants")}</p> : (
+          <ul className="space-y-2">{detail.participants.map((participant) => <li key={participant.id} className="rounded-lg border border-border p-3 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium">{participant.user.nickname}</span><Badge variant="outline">{t("partySize", { count: participant.partySize })}</Badge></div><p className="mt-1 text-muted-foreground">{participant.contactType === "phone" ? <Phone className="mr-1 inline h-3.5 w-3.5" /> : <MessageCircle className="mr-1 inline h-3.5 w-3.5" />}{participant.contactValue}</p><p className="text-xs text-muted-foreground">{participant.user.email} · {t("joinedAt", { time: dateFormatter.format(new Date(participant.createdAt)) })}</p></li>)}</ul>
+        )}
+      </section>
+    </>
   );
 }

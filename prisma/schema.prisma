@@ -19,15 +19,16 @@ datasource db {
 /// A registered account. Everyone publishes/joins trips with their own account.
 model User {
   /// Primary key (collision-resistant cuid).
-  id           String   @id @default(cuid())
+  id             String            @id @default(cuid())
   /// Login email, unique per account (verified by emailed code at signup).
-  email        String   @unique
+  email          String            @unique
   /// scrypt password hash, stored as "saltHex$hashHex".
-  passwordHash String
+  passwordHash   String
   /// Display nickname shown as the trip organizer name by default.
-  nickname     String
-  createdAt    DateTime @default(now())
-  trips        CarpoolOrder[]
+  nickname       String
+  createdAt      DateTime          @default(now())
+  trips          CarpoolOrder[]
+  participations TripParticipant[]
 }
 
 /// Short-lived email verification codes for account registration.
@@ -44,7 +45,7 @@ model EmailCode {
 /// A carpool trip published by a student organizer.
 model CarpoolOrder {
   /// Primary key (collision-resistant cuid).
-  id             String   @id @default(cuid())
+  id             String            @id @default(cuid())
   /// Nickname of the trip organizer shown on the trip card.
   organizerName  String
   /// Departure location (campus preset or custom text).
@@ -59,10 +60,10 @@ model CarpoolOrder {
   remainingSeats Int
   /// TOTAL price of the whole trip in RMB; passengers split it, so the
   /// per-person share depends on how many people finally join.
-  totalPrice     Decimal  @db.Decimal(10, 2)
+  totalPrice     Decimal           @db.Decimal(10, 2)
   /// Account that published this trip.
   organizerId    String?
-  organizer      User?    @relation(fields: [organizerId], references: [id])
+  organizer      User?             @relation(fields: [organizerId], references: [id])
   /// Enabled contact channels: "wechat" | "phone" | "both".
   contactType    String
   /// WeChat ID (present when contactType includes wechat).
@@ -72,12 +73,29 @@ model CarpoolOrder {
   /// Optional remarks: luggage limits, pet rules, travel notes.
   remark         String?
   /// Trip status: "recruiting" | "full" | "finished".
-  status         String   @default("recruiting")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  status         String            @default("recruiting")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  participants   TripParticipant[]
 
   @@index([departTime])
   @@index([status])
+}
+
+/// A user's single tracked signup for a trip. One signup may cover a group.
+model TripParticipant {
+  id           String       @id @default(cuid())
+  tripId       String
+  userId       String
+  partySize    Int
+  contactType  String
+  contactValue String
+  createdAt    DateTime     @default(now())
+  trip         CarpoolOrder @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+  @@index([userId])
 }
 
 /// A registered campus driver managed via the Driver Management Center.
