@@ -64,16 +64,6 @@ export async function GET(request: NextRequest) {
       return loginRedirect(request, locale, "profile_failed");
     }
 
-    const configuredAdmin = process.env.ADMIN_WECHAT_ACCOUNT?.trim();
-    const adminAlreadyBound = await prisma.user.findFirst({
-      where: { isAdmin: true },
-      select: { id: true },
-    });
-    const shouldBindAdmin =
-      !adminAlreadyBound &&
-      Boolean(configuredAdmin) &&
-      profile.nickname?.trim() === configuredAdmin;
-
     const existing = await prisma.user.findUnique({
       where: { wechatOpenId: profile.openid },
     });
@@ -88,7 +78,6 @@ export async function GET(request: NextRequest) {
             ...(!existing.avatarUrl && profile.headimgurl
               ? { avatarUrl: profile.headimgurl }
               : {}),
-            ...(shouldBindAdmin ? { isAdmin: true } : {}),
           },
         })
       : await prisma.user.create({
@@ -96,7 +85,7 @@ export async function GET(request: NextRequest) {
             wechatOpenId: profile.openid,
             nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`,
             avatarUrl: profile.headimgurl || null,
-            isAdmin: shouldBindAdmin,
+            isAdmin: false,
           },
         });
 
