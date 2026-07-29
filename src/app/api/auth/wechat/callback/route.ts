@@ -89,8 +89,9 @@ export async function GET(request: NextRequest) {
           },
         });
 
+    let qrAuthorized = false;
     if (ticket) {
-      await prisma.wechatLoginTicket.updateMany({
+      const updatedTicket = await prisma.wechatLoginTicket.updateMany({
         where: {
           token: ticket,
           status: "pending",
@@ -98,10 +99,16 @@ export async function GET(request: NextRequest) {
         },
         data: { status: "authorized", userId: user.id },
       });
+      qrAuthorized = updatedTicket.count > 0;
     }
 
     setSessionCookie(user.id);
-    const response = NextResponse.redirect(new URL(`/${locale}`, request.nextUrl.origin));
+    const response = NextResponse.redirect(
+      new URL(
+        qrAuthorized ? `/${locale}/wechat-success` : `/${locale}`,
+        request.nextUrl.origin
+      )
+    );
     response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
     return response;
   } catch (error) {

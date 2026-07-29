@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MessageCircle, Smartphone, X } from "lucide-react";
+import { Copy, Loader2, MessageCircle, Smartphone, X } from "lucide-react";
 import QRCode from "qrcode";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -16,6 +16,8 @@ export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [authorizeUrl, setAuthorizeUrl] = useState("");
   const [error, setError] = useState(false);
+  const [mobileBrowser, setMobileBrowser] = useState(false);
+  const [copied, setCopied] = useState(false);
   const pollTimer = useRef<number | null>(null);
 
   function stopPolling() {
@@ -29,10 +31,12 @@ export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
 
   async function openWechat() {
     const directUrl = `/api/auth/wechat?locale=${locale}`;
-    if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+    if (/MicroMessenger/i.test(navigator.userAgent)) {
       window.location.href = directUrl;
       return;
     }
+
+    setMobileBrowser(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
 
     setOpen(true);
     setLoading(true);
@@ -84,6 +88,16 @@ export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
     }
   }
 
+  async function copyAndOpenWechat() {
+    try {
+      await navigator.clipboard.writeText(authorizeUrl);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+    window.location.href = "weixin://";
+  }
+
   return (
     <>
       <Button
@@ -130,13 +144,14 @@ export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
             ) : (
               <p className="text-sm text-muted-foreground">{t("wechatQrWaiting")}</p>
             )}
-            {authorizeUrl && (
-              <Button asChild variant="outline" className="mt-4 w-full">
-                <a href={authorizeUrl}>
-                  <Smartphone className="h-4 w-4" />
-                  {t("directWechat")}
-                </a>
-              </Button>
+            {authorizeUrl && mobileBrowser && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs text-muted-foreground">{t("mobileWechatHint")}</p>
+                <Button type="button" variant="outline" className="w-full" onClick={() => void copyAndOpenWechat()}>
+                  {copied ? <Copy className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}
+                  {copied ? t("wechatLinkCopied") : t("copyOpenWechat")}
+                </Button>
+              </div>
             )}
           </div>
         </div>
