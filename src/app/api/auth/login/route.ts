@@ -16,7 +16,12 @@ export async function POST(request: NextRequest) {
     const user = normalized
       ? await prisma.user.findUnique({ where: { email: normalized } })
       : null;
-    if (!user || !password || !verifyPassword(password, user.passwordHash)) {
+    if (
+      !user ||
+      !password ||
+      !user.passwordHash ||
+      !verifyPassword(password, user.passwordHash)
+    ) {
       return NextResponse.json(
         { error: "invalid_credentials" },
         { status: 401 }

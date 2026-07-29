@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Camera,
   CalendarClock,
   Eye,
   Loader2,
@@ -11,6 +12,7 @@ import {
   Mail,
   MessageCircle,
   Phone,
+  Save,
   ShieldCheck,
   Trash2,
   UserRound,
@@ -22,6 +24,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -35,6 +39,7 @@ import type {
   JoinedTripDTO,
   TripDetailDTO,
   TripStatus,
+  SessionUserDTO,
 } from "@/lib/types";
 
 const STATUS_STYLES: Record<TripStatus, string> = {
@@ -63,25 +68,24 @@ export default function AccountPage() {
         </p>
       </motion.header>
       <LoginGate message={t("needLogin")}>
-        {(user) => <AccountContent userNickname={user.nickname} userEmail={user.email} isAdmin={user.isAdmin} />}
+        {(user) => <AccountContent initialUser={user} />}
       </LoginGate>
     </main>
   );
 }
 
-interface AccountContentProps {
-  userNickname: string;
-  userEmail: string;
-  isAdmin: boolean;
-}
-
-function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProps) {
+function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
   const t = useTranslations("account");
   const tTrip = useTranslations("trip");
   const tDetail = useTranslations("tripDetail");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
+  const [profile, setProfile] = useState(initialUser);
+  const [nickname, setNickname] = useState(initialUser.nickname);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialUser.avatarUrl);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileFeedback, setProfileFeedback] = useState<"success" | "error" | null>(null);
   const [trips, setTrips] = useState<CarpoolOrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -96,6 +100,42 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
   const [detail, setDetail] = useState<TripDetailDTO | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState(false);
+
+  function handleAvatarFile(file: File | undefined) {
+    setProfileFeedback(null);
+    if (!file || file.size > 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setProfileFeedback("error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setAvatarUrl(typeof reader.result === "string" ? reader.result : null);
+    reader.onerror = () => setProfileFeedback("error");
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSaveProfile(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingProfile(true);
+    setProfileFeedback(null);
+    try {
+      const response = await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nickname, avatarUrl }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const updated = (await response.json()) as SessionUserDTO;
+      setProfile(updated);
+      setNickname(updated.nickname);
+      setAvatarUrl(updated.avatarUrl);
+      setProfileFeedback("success");
+      router.refresh();
+    } catch {
+      setProfileFeedback("error");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
 
   const loadMyTrips = useCallback(async () => {
     setLoading(true);
@@ -216,8 +256,8 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
           <div className="space-y-1.5">
             <p className="flex items-center gap-2 text-base font-semibold text-foreground">
               <UserRound className="h-4 w-4 text-muted-foreground" />
-              {userNickname}
-              {isAdmin && (
+              {profile.nickname}
+              {profile.isAdmin && (
                 <Badge
                   variant="outline"
                   className="border-purple-500/40 bg-purple-500/15 text-purple-400"
@@ -229,7 +269,7 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
             </p>
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
-              {userEmail}
+              {profile.email || t("wechatAccount")}
             </p>
           </div>
           <Button
@@ -244,6 +284,43 @@ function AccountContent({ userNickname, userEmail, isAdmin }: AccountContentProp
             )}
             {loggingOut ? t("loggingOut") : t("logout")}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border bg-card/70 backdrop-blur">
+        <CardHeader>
+          <CardTitle>{t("editProfile")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary">
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt={t("avatar")} className="h-full w-full object-cover" />
+                ) : (
+                  <UserRound className="h-9 w-9 text-muted-foreground" />
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="profile-avatar" className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-accent">
+                  <Camera className="h-4 w-4" />
+                  {t("uploadAvatar")}
+                </Label>
+                <Input id="profile-avatar" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleAvatarFile(event.target.files?.[0])} />
+                <p className="text-xs text-muted-foreground">{t("avatarHint")}</p>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-nickname">{t("nickname")}</Label>
+              <Input id="profile-nickname" maxLength={40} required value={nickname} onChange={(event) => setNickname(event.target.value)} />
+            </div>
+            {profileFeedback && <p className={profileFeedback === "success" ? "text-sm text-emerald-500" : "text-sm text-red-400"}>{t(profileFeedback === "success" ? "profileSaved" : "profileSaveFailed")}</p>}
+            <Button type="submit" disabled={savingProfile}>
+              {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {savingProfile ? t("savingProfile") : t("saveProfile")}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
@@ -457,7 +534,7 @@ function TripDetailContent({ detail, dateFormatter }: { detail: TripDetailDTO; d
       <section className="space-y-2">
         <h3 className="font-semibold">{t("participants")}</h3>
         {detail.participants.length === 0 ? <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">{t("noParticipants")}</p> : (
-          <ul className="space-y-2">{detail.participants.map((participant) => <li key={participant.id} className="rounded-lg border border-border p-3 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium">{participant.user.nickname}</span><Badge variant="outline">{t("partySize", { count: participant.partySize })}</Badge></div><p className="mt-1 text-muted-foreground">{participant.contactType === "phone" ? <Phone className="mr-1 inline h-3.5 w-3.5" /> : <MessageCircle className="mr-1 inline h-3.5 w-3.5" />}{participant.contactValue}</p><p className="text-xs text-muted-foreground">{participant.user.email} · {t("joinedAt", { time: dateFormatter.format(new Date(participant.createdAt)) })}</p></li>)}</ul>
+          <ul className="space-y-2">{detail.participants.map((participant) => <li key={participant.id} className="rounded-lg border border-border p-3 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium">{participant.user.nickname}</span><Badge variant="outline">{t("partySize", { count: participant.partySize })}</Badge></div><p className="mt-1 text-muted-foreground">{participant.contactType === "phone" ? <Phone className="mr-1 inline h-3.5 w-3.5" /> : <MessageCircle className="mr-1 inline h-3.5 w-3.5" />}{participant.contactValue}</p><p className="text-xs text-muted-foreground">{participant.user.email ? `${participant.user.email} · ` : ""}{t("joinedAt", { time: dateFormatter.format(new Date(participant.createdAt)) })}</p></li>)}</ul>
         )}
       </section>
     </>

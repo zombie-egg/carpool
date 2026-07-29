@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, MailCheck, UserPlus } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Loader2, MailCheck, MessageCircle, UserPlus } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ function toErrorKey(code: string | undefined, fallback: string): string {
 // Email registration page: send code -> verify -> create account.
 export default function RegisterPage() {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -126,6 +127,17 @@ export default function RegisterPage() {
             <CardDescription>{t("registerSubtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
+            <Button asChild className="mb-4 w-full bg-[#07c160] text-white hover:bg-[#06ad56]">
+              <a href={`/api/auth/wechat?locale=${locale}`}>
+                <MessageCircle className="h-4 w-4" />
+                {t("wechatRegister")}
+              </a>
+            </Button>
+            <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              {t("orEmail")}
+              <span className="h-px flex-1 bg-border" />
+            </div>
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="register-email">{t("email")}</Label>

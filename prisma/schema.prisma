@@ -21,11 +21,15 @@ model User {
   /// Primary key (collision-resistant cuid).
   id             String            @id @default(cuid())
   /// Login email, unique per account (verified by emailed code at signup).
-  email          String            @unique
+  email          String?           @unique
   /// scrypt password hash, stored as "saltHex$hashHex".
-  passwordHash   String
+  passwordHash   String?
   /// Display nickname shown as the trip organizer name by default.
   nickname       String
+  /// Profile image: WeChat CDN URL or a user-uploaded image data URL.
+  avatarUrl      String?
+  /// WeChat Official Account OpenID; present for WeChat-created accounts.
+  wechatOpenId   String?           @unique
   createdAt      DateTime          @default(now())
   trips          CarpoolOrder[]
   participations TripParticipant[]

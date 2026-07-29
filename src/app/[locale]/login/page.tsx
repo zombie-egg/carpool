@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, LogIn } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Loader2, LogIn, MessageCircle } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,11 +19,17 @@ import {
 // Email + password login page.
 export default function LoginPage() {
   const t = useTranslations("auth");
+  const locale = useLocale();
+  const [wechatError, setWechatError] = useState(false);
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setWechatError(new URLSearchParams(window.location.search).has("wechatError"));
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,6 +79,20 @@ export default function LoginPage() {
             <CardDescription>{t("loginSubtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
+            <Button asChild className="mb-4 w-full bg-[#07c160] text-white hover:bg-[#06ad56]">
+              <a href={`/api/auth/wechat?locale=${locale}`}>
+                <MessageCircle className="h-4 w-4" />
+                {t("wechatLogin")}
+              </a>
+            </Button>
+            {wechatError && (
+              <p className="mb-4 text-sm text-red-400">{t("errors.wechat_failed")}</p>
+            )}
+            <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              {t("orEmail")}
+              <span className="h-px flex-1 bg-border" />
+            </div>
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="login-email">{t("email")}</Label>

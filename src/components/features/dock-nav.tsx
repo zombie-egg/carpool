@@ -65,7 +65,7 @@ export function DockNav() {
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center">
       <div className="pointer-events-auto">
-        <Dock className="items-end">
+        <Dock className="items-end" magnification={40}>
           {NAV_ENTRIES.map(({ key, href, Icon }) => (
             <Link
               key={key}
@@ -117,7 +117,12 @@ export function DockNav() {
               </DockLabel>
               <DockIcon>
                 {user ? (
-                  <UserRound className="h-full w-full text-emerald-400" />
+                  user.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+                  ) : (
+                    <UserRound className="h-full w-full text-emerald-400" />
+                  )
                 ) : (
                   <LogIn className={iconClass} />
                 )}

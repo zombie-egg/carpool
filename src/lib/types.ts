@@ -52,7 +52,7 @@ export interface TripParticipationDTO {
   user: {
     id: string;
     nickname: string;
-    email: string;
+    email: string | null;
   };
 }
 
@@ -63,12 +63,12 @@ export interface JoinedTripDTO {
   contactValue: string;
   createdAt: string;
   trip: CarpoolOrderDTO & {
-    organizer: { nickname: string; email: string } | null;
+    organizer: { nickname: string; email: string | null } | null;
   };
 }
 
 export interface TripDetailDTO extends CarpoolOrderDTO {
-  organizer: { id: string; nickname: string; email: string } | null;
+  organizer: { id: string; nickname: string; email: string | null } | null;
   participants: TripParticipationDTO[];
 }
 
@@ -112,7 +112,9 @@ export interface ApiError {
 // Logged-in account as returned by /api/auth/me.
 export interface SessionUserDTO {
   id: string;
-  email: string;
+  email: string | null;
   nickname: string;
+  avatarUrl: string | null;
+  loginMethod: "email" | "wechat";
   isAdmin: boolean;
 }

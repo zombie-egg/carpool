@@ -213,6 +213,9 @@
     "loggingIn": "登录中...",
     "register": "注册",
     "registering": "注册中...",
+    "wechatLogin": "微信登录（首次自动注册）",
+    "wechatRegister": "微信授权登录并注册",
+    "orEmail": "或使用邮箱",
     "toRegister": "还没有账户？去注册",
     "toLogin": "已有账户？去登录",
     "logout": "退出登录",
@@ -230,7 +233,8 @@
       "invalid_credentials": "邮箱或密码错误。",
       "register_failed": "注册失败，请重试。",
       "login_failed": "登录失败，请重试。",
-      "required": "该项为必填项。"
+      "required": "该项为必填项。",
+      "wechat_failed": "微信授权失败，请在微信内打开后重试。"
     }
   },
   "account": {
@@ -238,6 +242,15 @@
     "subtitle": "管理你的账户和已发布的拼车行程。",
     "email": "邮箱",
     "nickname": "昵称",
+    "wechatAccount": "微信账户",
+    "editProfile": "编辑个人资料",
+    "avatar": "头像",
+    "uploadAvatar": "上传头像",
+    "avatarHint": "支持 JPG、PNG、WebP，最大 1 MB。",
+    "saveProfile": "保存资料",
+    "savingProfile": "保存中...",
+    "profileSaved": "个人资料已更新。",
+    "profileSaveFailed": "资料保存失败，请检查昵称或头像。",
     "adminBadge": "管理员",
     "myTrips": "我的发布",
     "viewDetails": "查看详情",

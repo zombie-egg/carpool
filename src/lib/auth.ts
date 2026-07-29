@@ -76,15 +76,17 @@ export function parseSessionToken(token: string): string | null {
 
 export interface SessionUser {
   id: string;
-  email: string;
+  email: string | null;
   nickname: string;
+  avatarUrl: string | null;
+  loginMethod: "email" | "wechat";
   isAdmin: boolean;
 }
 
 // Only the configured admin account may manage drivers.
-export function isAdminEmail(email: string): boolean {
+export function isAdminEmail(email: string | null): boolean {
   const admin = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  return Boolean(admin) && email.trim().toLowerCase() === admin;
+  return Boolean(admin && email) && email!.trim().toLowerCase() === admin;
 }
 
 // Reads the session cookie and loads the current user (null when logged out).
@@ -95,10 +97,21 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (!userId) return null;
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, nickname: true },
+    select: {
+      id: true,
+      email: true,
+      nickname: true,
+      avatarUrl: true,
+      wechatOpenId: true,
+    },
   });
   if (!user) return null;
-  return { ...user, isAdmin: isAdminEmail(user.email) };
+  const { wechatOpenId, ...profile } = user;
+  return {
+    ...profile,
+    loginMethod: wechatOpenId ? "wechat" : "email",
+    isAdmin: isAdminEmail(user.email),
+  };
 }
 
 export function setSessionCookie(userId: string): void {

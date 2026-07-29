@@ -213,6 +213,9 @@
     "loggingIn": "Logging in...",
     "register": "Register",
     "registering": "Registering...",
+    "wechatLogin": "Continue with WeChat (auto-register)",
+    "wechatRegister": "Authorize WeChat to sign in and register",
+    "orEmail": "or use email",
     "toRegister": "No account yet? Register",
     "toLogin": "Already have an account? Log in",
     "logout": "Log out",
@@ -230,7 +233,8 @@
       "invalid_credentials": "Wrong email or password.",
       "register_failed": "Registration failed. Please try again.",
       "login_failed": "Login failed. Please try again.",
-      "required": "This field is required."
+      "required": "This field is required.",
+      "wechat_failed": "WeChat authorization failed. Open this page in WeChat and try again."
     }
   },
   "account": {
@@ -238,6 +242,15 @@
     "subtitle": "Manage your account and the carpool trips you published.",
     "email": "Email",
     "nickname": "Nickname",
+    "wechatAccount": "WeChat account",
+    "editProfile": "Edit profile",
+    "avatar": "Avatar",
+    "uploadAvatar": "Upload avatar",
+    "avatarHint": "JPG, PNG or WebP, up to 1 MB.",
+    "saveProfile": "Save profile",
+    "savingProfile": "Saving...",
+    "profileSaved": "Profile updated.",
+    "profileSaveFailed": "Could not save the profile. Check the nickname or avatar.",
     "adminBadge": "Admin",
     "myTrips": "My published trips",
     "viewDetails": "View details",
