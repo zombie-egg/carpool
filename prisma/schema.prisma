@@ -30,9 +30,23 @@ model User {
   avatarUrl      String?
   /// WeChat Official Account OpenID; present for WeChat-created accounts.
   wechatOpenId   String?           @unique
+  /// Persisted role; WeChat admin binding survives nickname changes.
+  isAdmin        Boolean           @default(false)
   createdAt      DateTime          @default(now())
   trips          CarpoolOrder[]
   participations TripParticipant[]
+}
+
+/// Short-lived handoff token used to log a desktop browser in after QR scan.
+model WechatLoginTicket {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String?
+  status    String   @default("pending")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 /// Short-lived email verification codes for account registration.

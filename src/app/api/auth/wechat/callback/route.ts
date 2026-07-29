@@ -28,6 +28,7 @@ function loginRedirect(request: NextRequest, locale: string, error?: string) {
 // Exchanges the OAuth code, loads the WeChat profile and logs in or registers.
 export async function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get("locale") === "en" ? "en" : "zh";
+  const ticket = request.nextUrl.searchParams.get("ticket")?.trim();
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
   const expectedState = request.cookies.get(STATE_COOKIE)?.value;
@@ -63,6 +64,16 @@ export async function GET(request: NextRequest) {
       return loginRedirect(request, locale, "profile_failed");
     }
 
+    const configuredAdmin = process.env.ADMIN_WECHAT_ACCOUNT?.trim();
+    const adminAlreadyBound = await prisma.user.findFirst({
+      where: { isAdmin: true },
+      select: { id: true },
+    });
+    const shouldBindAdmin =
+      !adminAlreadyBound &&
+      Boolean(configuredAdmin) &&
+      profile.nickname?.trim() === configuredAdmin;
+
     const existing = await prisma.user.findUnique({
       where: { wechatOpenId: profile.openid },
     });
@@ -77,6 +88,7 @@ export async function GET(request: NextRequest) {
             ...(!existing.avatarUrl && profile.headimgurl
               ? { avatarUrl: profile.headimgurl }
               : {}),
+            ...(shouldBindAdmin ? { isAdmin: true } : {}),
           },
         })
       : await prisma.user.create({
@@ -84,8 +96,20 @@ export async function GET(request: NextRequest) {
             wechatOpenId: profile.openid,
             nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`,
             avatarUrl: profile.headimgurl || null,
+            isAdmin: shouldBindAdmin,
           },
         });
+
+    if (ticket) {
+      await prisma.wechatLoginTicket.updateMany({
+        where: {
+          token: ticket,
+          status: "pending",
+          expiresAt: { gt: new Date() },
+        },
+        data: { status: "authorized", userId: user.id },
+      });
+    }
 
     setSessionCookie(user.id);
     const response = NextResponse.redirect(new URL(`/${locale}`, request.nextUrl.origin));

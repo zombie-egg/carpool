@@ -13,12 +13,15 @@ export async function GET(request: NextRequest) {
   }
 
   const locale = request.nextUrl.searchParams.get("locale") === "en" ? "en" : "zh";
+  const ticket = request.nextUrl.searchParams.get("ticket")?.trim();
   const state = randomBytes(24).toString("hex");
   const publicOrigin = (process.env.APP_URL?.trim() || request.nextUrl.origin).replace(/\/$/, "");
-  const callback = `${publicOrigin}/api/auth/wechat/callback?locale=${locale}`;
+  const callbackUrl = new URL(`${publicOrigin}/api/auth/wechat/callback`);
+  callbackUrl.searchParams.set("locale", locale);
+  if (ticket) callbackUrl.searchParams.set("ticket", ticket);
   const authorize = new URL("https://open.weixin.qq.com/connect/oauth2/authorize");
   authorize.searchParams.set("appid", appId);
-  authorize.searchParams.set("redirect_uri", callback);
+  authorize.searchParams.set("redirect_uri", callbackUrl.toString());
   authorize.searchParams.set("response_type", "code");
   authorize.searchParams.set("scope", "snsapi_userinfo");
   authorize.searchParams.set("state", state);

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, LogIn, MessageCircle } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { Loader2, LogIn } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { WechatAuthButton } from "@/components/features/wechat-auth-button";
 
 // Email + password login page.
 export default function LoginPage() {
   const t = useTranslations("auth");
-  const locale = useLocale();
   const [wechatError, setWechatError] = useState(false);
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -79,12 +79,7 @@ export default function LoginPage() {
             <CardDescription>{t("loginSubtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild className="mb-4 w-full bg-[#07c160] text-white hover:bg-[#06ad56]">
-              <a href={`/api/auth/wechat?locale=${locale}`}>
-                <MessageCircle className="h-4 w-4" />
-                {t("wechatLogin")}
-              </a>
-            </Button>
+            <WechatAuthButton mode="login" />
             {wechatError && (
               <p className="mb-4 text-sm text-red-400">{t("errors.wechat_failed")}</p>
             )}

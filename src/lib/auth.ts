@@ -83,12 +83,6 @@ export interface SessionUser {
   isAdmin: boolean;
 }
 
-// Only the configured admin account may manage drivers.
-export function isAdminEmail(email: string | null): boolean {
-  const admin = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  return Boolean(admin && email) && email!.trim().toLowerCase() === admin;
-}
-
 // Reads the session cookie and loads the current user (null when logged out).
 export async function getSessionUser(): Promise<SessionUser | null> {
   const token = cookies().get(SESSION_COOKIE)?.value;
@@ -103,6 +97,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       nickname: true,
       avatarUrl: true,
       wechatOpenId: true,
+      isAdmin: true,
     },
   });
   if (!user) return null;
@@ -110,7 +105,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return {
     ...profile,
     loginMethod: wechatOpenId ? "wechat" : "email",
-    isAdmin: isAdminEmail(user.email),
+    isAdmin: user.isAdmin,
   };
 }
 

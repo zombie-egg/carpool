@@ -35,7 +35,7 @@ export async function PATCH(request: NextRequest) {
       const updated = await tx.user.update({
         where: { id: session.id },
         data: { nickname, avatarUrl: payload.avatarUrl || null },
-        select: { id: true, email: true, nickname: true, avatarUrl: true, wechatOpenId: true },
+      select: { id: true, email: true, nickname: true, avatarUrl: true, wechatOpenId: true, isAdmin: true },
       });
       await tx.carpoolOrder.updateMany({
         where: { organizerId: session.id },
@@ -49,7 +49,7 @@ export async function PATCH(request: NextRequest) {
       nickname: user.nickname,
       avatarUrl: user.avatarUrl,
       loginMethod: user.wechatOpenId ? "wechat" : "email",
-      isAdmin: session.isAdmin,
+      isAdmin: user.isAdmin,
     });
   } catch (error) {
     console.error("PATCH /api/auth/profile failed:", error);
