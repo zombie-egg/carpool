@@ -29,6 +29,11 @@ function loginRedirect(request: NextRequest, locale: string, error?: string) {
 export async function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get("locale") === "en" ? "en" : "zh";
   const ticket = request.nextUrl.searchParams.get("ticket")?.trim();
+  const requestedReturnTo = request.nextUrl.searchParams.get("returnTo")?.trim();
+  const returnTo =
+    requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+      ? requestedReturnTo.slice(0, 1000)
+      : `/${locale}`;
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
   const expectedState = request.cookies.get(STATE_COOKIE)?.value;
@@ -105,7 +110,7 @@ export async function GET(request: NextRequest) {
     setSessionCookie(user.id);
     const response = NextResponse.redirect(
       new URL(
-        qrAuthorized ? `/${locale}/wechat-success` : `/${locale}`,
+        qrAuthorized ? `/${locale}/wechat-success` : returnTo,
         request.nextUrl.origin
       )
     );
