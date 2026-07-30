@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { setSessionCookie } from "@/lib/auth";
+import { createSessionToken, setSessionCookie } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +17,45 @@ interface WechatProfile {
   nickname?: string;
   headimgurl?: string;
   errcode?: number;
+}
+
+function qrSuccessResponse(locale: string, userId: string) {
+  const isZh = locale === "zh";
+  const home = `/${locale}`;
+  const title = isZh ? "微信授权成功" : "WeChat authorization complete";
+  const message = isZh
+    ? "电脑已自动登录，正在进入手机网站…"
+    : "Your computer is signed in. Opening the mobile website…";
+  const action = isZh ? "立即进入网站" : "Open website now";
+  const html = `<!doctype html>
+<html lang="${locale}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="refresh" content="1;url=${home}">
+  <title>${title}</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#f7f7f7;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.card{width:100%;max-width:420px;padding:36px 24px;border-radius:18px;background:#fff;text-align:center;box-shadow:0 10px 35px rgba(0,0,0,.08)}.icon{display:flex;width:64px;height:64px;margin:0 auto 20px;align-items:center;justify-content:center;border-radius:50%;background:#07c160;color:#fff;font-size:38px}.title{margin:0 0 12px;font-size:24px}.message{margin:0 0 24px;color:#666;line-height:1.6}.button{display:block;padding:13px 18px;border-radius:9px;background:#07c160;color:#fff;text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body><main class="card"><div class="icon">✓</div><h1 class="title">${title}</h1><p class="message">${message}</p><a class="button" href="${home}">${action}</a></main></body>
+</html>`;
+  const response = new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+  response.cookies.set("lian_session", createSessionToken(userId), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60,
+    path: "/",
+  });
+  response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
+  return response;
 }
 
 function loginRedirect(request: NextRequest, locale: string, error?: string) {
@@ -107,12 +146,13 @@ export async function GET(request: NextRequest) {
       qrAuthorized = updatedTicket.count > 0;
     }
 
+    if (qrAuthorized) {
+      return qrSuccessResponse(locale, user.id);
+    }
+
     setSessionCookie(user.id);
     const response = NextResponse.redirect(
-      new URL(
-        qrAuthorized ? `/${locale}/wechat-success` : returnTo,
-        request.nextUrl.origin
-      )
+      new URL(returnTo, request.nextUrl.origin)
     );
     response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
     return response;
