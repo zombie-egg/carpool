@@ -67,6 +67,8 @@ model VipAdvertisement {
   id        String   @id @default(cuid())
   title     String
   content   String
+  /// Cropped 12:1 banner image stored as a compressed data URL.
+  imageData String?
   createdAt DateTime @default(now())
 
   @@index([createdAt])

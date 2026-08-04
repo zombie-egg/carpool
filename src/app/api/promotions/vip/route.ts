@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
     const advertisement = await prisma.vipAdvertisement.create({
-      data: { title: payload.title.trim(), content: payload.content.trim() },
+      data: { title: "", content: "", imageData: payload.imageData },
     });
     return NextResponse.json(advertisement, { status: 201 });
   } catch (error) {

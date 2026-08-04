@@ -27,14 +27,14 @@ export function validateMerchantPromotion(payload: {
 }
 
 export function validateVipAdvertisement(payload: {
-  title?: string;
-  content?: string;
+  imageData?: string;
 }) {
-  if (!payload.title?.trim() || payload.title.trim().length > 80) {
-    return "invalid_title";
-  }
-  if (!payload.content?.trim() || payload.content.trim().length > 300) {
-    return "invalid_content";
+  if (
+    !payload.imageData ||
+    payload.imageData.length > MAX_POSTER_LENGTH ||
+    !IMAGE_DATA_URL.test(payload.imageData)
+  ) {
+    return "invalid_image";
   }
   return null;
 }

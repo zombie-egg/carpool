@@ -139,10 +139,10 @@ export interface VipAdvertisementDTO {
   id: string;
   title: string;
   content: string;
+  imageData: string | null;
   createdAt: string;
 }
 
 export interface VipAdvertisementPayload {
-  title: string;
-  content: string;
+  imageData: string;
 }
