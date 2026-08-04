@@ -6,8 +6,8 @@ import { Crop, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const OUTPUT_WIDTH = 2400;
-const OUTPUT_HEIGHT = 240;
+const OUTPUT_WIDTH = 1500;
+const OUTPUT_HEIGHT = 600;
 
 interface VipImageCropperProps {
   source: string;
@@ -113,7 +113,7 @@ export function VipImageCropper({
       <div className="w-full max-w-5xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:p-6">
         <div
           ref={frameRef}
-          className="relative aspect-[10/1] w-full touch-none overflow-hidden rounded-lg bg-black cursor-move"
+          className="relative aspect-[5/2] w-full touch-none overflow-hidden rounded-lg bg-black cursor-move"
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
             dragRef.current = {

@@ -38,7 +38,7 @@ export function VipAdCarousel() {
   const active = items[index];
 
   return (
-    <div className="relative left-1/2 mt-6 aspect-[5/2] w-screen -translate-x-1/2 overflow-hidden border-y border-amber-400/30 bg-card shadow-sm sm:aspect-[5/1] lg:aspect-[10/1]">
+    <div className="relative mx-auto mt-6 aspect-[5/2] w-full max-w-3xl overflow-hidden rounded-xl border border-amber-400/30 bg-black shadow-sm">
       {loading ? (
         <div className="flex h-full items-center justify-center text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -54,7 +54,7 @@ export function VipAdCarousel() {
             className="h-full w-full"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={active.imageData || ""} alt={t("vipImageAlt")} className="h-full w-full object-cover" />
+            <img src={active.imageData || ""} alt={t("vipImageAlt")} className="h-full w-full object-contain" />
             <span className="absolute bottom-1.5 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] text-white">
               {t("vipCounter", { current: index + 1, total: items.length })}
             </span>
