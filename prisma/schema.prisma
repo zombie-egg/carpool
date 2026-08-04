@@ -57,6 +57,8 @@ model MerchantPromotion {
   poster1      String?
   poster2      String?
   poster3      String?
+  poster4      String?
+  coverIndex   Int      @default(0)
   createdAt    DateTime @default(now())
 
   @@index([createdAt])

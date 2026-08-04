@@ -5,6 +5,7 @@ export function validateMerchantPromotion(payload: {
   merchantName?: string;
   content?: string;
   posters?: string[];
+  coverIndex?: number;
 }) {
   if (!payload.merchantName?.trim() || payload.merchantName.trim().length > 80) {
     return "invalid_merchant_name";
@@ -12,8 +13,15 @@ export function validateMerchantPromotion(payload: {
   if (!payload.content?.trim() || payload.content.trim().length > 2000) {
     return "invalid_content";
   }
-  if (!Array.isArray(payload.posters) || payload.posters.length > 3) {
+  if (!Array.isArray(payload.posters) || payload.posters.length > 4) {
     return "invalid_posters";
+  }
+  if (
+    !Number.isInteger(payload.coverIndex) ||
+    payload.coverIndex! < 0 ||
+    (payload.posters.length > 0 && payload.coverIndex! >= payload.posters.length)
+  ) {
+    return "invalid_cover";
   }
   if (
     payload.posters.some(

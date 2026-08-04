@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
-    const posters = payload.posters.slice(0, 3);
+    const posters = payload.posters.slice(0, 4);
     const merchant = await prisma.merchantPromotion.create({
       data: {
         merchantName: payload.merchantName.trim(),
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
         poster1: posters[0] || null,
         poster2: posters[1] || null,
         poster3: posters[2] || null,
+        poster4: posters[3] || null,
+        coverIndex: posters.length > 0 ? payload.coverIndex : 0,
       },
     });
     return NextResponse.json(merchant, { status: 201 });

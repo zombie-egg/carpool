@@ -126,6 +126,8 @@ export interface MerchantPromotionDTO {
   poster1: string | null;
   poster2: string | null;
   poster3: string | null;
+  poster4: string | null;
+  coverIndex: number;
   createdAt: string;
 }
 
@@ -133,6 +135,7 @@ export interface MerchantPromotionPayload {
   merchantName: string;
   content: string;
   posters: string[];
+  coverIndex: number;
 }
 
 export interface VipAdvertisementDTO {
