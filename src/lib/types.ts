@@ -118,3 +118,31 @@ export interface SessionUserDTO {
   loginMethod: "email" | "wechat";
   isAdmin: boolean;
 }
+
+export interface MerchantPromotionDTO {
+  id: string;
+  merchantName: string;
+  content: string;
+  poster1: string | null;
+  poster2: string | null;
+  poster3: string | null;
+  createdAt: string;
+}
+
+export interface MerchantPromotionPayload {
+  merchantName: string;
+  content: string;
+  posters: string[];
+}
+
+export interface VipAdvertisementDTO {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface VipAdvertisementPayload {
+  title: string;
+  content: string;
+}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   Car,
+  Flame,
   Home,
   Languages,
   List,
@@ -21,7 +22,7 @@ import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { useSession } from "@/components/features/use-session";
 
 interface NavEntry {
-  key: "home" | "publish" | "list" | "driver";
+  key: "home" | "publish" | "list" | "hotspots" | "driver";
   href: string;
   Icon: typeof Home;
 }
@@ -30,6 +31,7 @@ const NAV_ENTRIES: NavEntry[] = [
   { key: "home", href: "/", Icon: Home },
   { key: "publish", href: "/publish", Icon: PlusCircle },
   { key: "list", href: "/carpool-list", Icon: List },
+  { key: "hotspots", href: "/hotspots", Icon: Flame },
   { key: "driver", href: "/driver", Icon: Car },
 ];
 
@@ -65,7 +67,10 @@ export function DockNav() {
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center">
       <div className="pointer-events-auto">
-        <Dock className="items-end" magnification={40}>
+        <Dock
+          className="items-end gap-1 px-2 sm:gap-4 sm:px-4"
+          magnification={40}
+        >
           {NAV_ENTRIES.map(({ key, href, Icon }) => (
             <Link
               key={key}

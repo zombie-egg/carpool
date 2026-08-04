@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { TripBoard } from "@/components/features/trip-board";
+import { VipAdCarousel } from "@/components/features/vip-ad-carousel";
 
 // Homepage: hero + filterable grid of all published carpool trips.
 export default function HomePage() {
@@ -29,6 +30,7 @@ export default function HomePage() {
         <p className="mx-auto mt-4 text-center text-sm text-muted-foreground sm:text-base">
           {t("subtitle")}
         </p>
+        <VipAdCarousel />
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button asChild size="lg">
             <Link href="/publish">

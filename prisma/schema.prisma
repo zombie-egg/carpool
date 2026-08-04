@@ -49,6 +49,29 @@ model WechatLoginTicket {
   @@index([expiresAt])
 }
 
+/// Merchant information displayed in the public Hotspots section.
+model MerchantPromotion {
+  id           String   @id @default(cuid())
+  merchantName String
+  content      String
+  poster1      String?
+  poster2      String?
+  poster3      String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// Compact VIP messages rotated beneath the homepage hero title.
+model VipAdvertisement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 /// Short-lived email verification codes for account registration.
 model EmailCode {
   id        String   @id @default(cuid())
