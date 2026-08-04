@@ -97,7 +97,7 @@
     "saveMerchant": "添加商家",
     "addVip": "添加 VIP 广告",
     "selectVipImage": "选择 VIP 广告图片",
-    "vipImageHint": "上传图片后可拖动和缩放，裁剪为适合横幅展示的 12:1 比例。",
+    "vipImageHint": "上传图片后可拖动和缩放，裁剪为超宽横幅；页面会根据手机、平板和电脑屏幕自动调整展示比例。",
     "cropHint": "拖动图片调整位置，使用滑杆缩放，亮框内为最终广告画面。",
     "cropCancel": "取消",
     "cropConfirm": "完成裁剪",

@@ -38,7 +38,7 @@ export function VipAdCarousel() {
   const active = items[index];
 
   return (
-    <div className="relative left-1/2 mt-6 h-16 w-[calc(100vw-2rem)] max-w-[160rem] -translate-x-1/2 overflow-hidden rounded-xl border border-amber-400/30 bg-card shadow-sm sm:h-24">
+    <div className="relative left-1/2 mt-6 aspect-[5/1] w-screen -translate-x-1/2 overflow-hidden border-y border-amber-400/30 bg-card shadow-sm sm:aspect-[10/1] lg:aspect-[20/1]">
       {loading ? (
         <div className="flex h-full items-center justify-center text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />

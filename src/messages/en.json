@@ -97,7 +97,7 @@
     "saveMerchant": "Add merchant",
     "addVip": "Add VIP advertisement",
     "selectVipImage": "Select VIP advertisement image",
-    "vipImageHint": "Drag and zoom after upload to crop the image to the 12:1 banner format.",
+    "vipImageHint": "Drag and zoom to create an ultra-wide banner. Its display ratio adapts automatically to phones, tablets and desktop screens.",
     "cropHint": "Drag to reposition and use the slider to zoom. The outlined area is the final banner.",
     "cropCancel": "Cancel",
     "cropConfirm": "Finish crop",
