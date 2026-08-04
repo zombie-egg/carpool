@@ -17,7 +17,19 @@ export function VipAdCarousel() {
       const response = await fetch("/api/promotions/vip", { cache: "no-store" });
       if (response.ok) {
         const advertisements = (await response.json()) as VipAdvertisementDTO[];
-        setItems(advertisements.filter((item) => Boolean(item.imageData)));
+        const imageAdvertisements = advertisements.filter((item) => Boolean(item.imageData));
+        await Promise.all(
+          imageAdvertisements.map(
+            (item) =>
+              new Promise<void>((resolve) => {
+                const image = new Image();
+                image.onload = () => resolve();
+                image.onerror = () => resolve();
+                image.src = item.imageData || "";
+              })
+          )
+        );
+        setItems(imageAdvertisements);
       }
     } finally {
       setLoading(false);
@@ -44,14 +56,14 @@ export function VipAdCarousel() {
           <Loader2 className="h-4 w-4 animate-spin" />
         </div>
       ) : (
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           <motion.div
             key={active.id}
             initial={{ x: "100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "-100%", opacity: 0 }}
-            transition={{ duration: 0.55, ease: "easeInOut" }}
-            className="h-full w-full"
+            exit={{ x: "-100%", opacity: 1 }}
+            transition={{ duration: 0.65, ease: [0.45, 0, 0.55, 1] }}
+            className="absolute inset-0 h-full w-full"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={active.imageData || ""} alt={t("vipImageAlt")} className="h-full w-full object-contain" />
