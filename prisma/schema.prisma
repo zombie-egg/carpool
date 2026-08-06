@@ -53,6 +53,20 @@ model WechatLoginTicket {
   @@index([expiresAt])
 }
 
+/// Short-lived profile handoff for first-time WeChat registration.
+model WechatRegistrationTicket {
+  id              String   @id @default(cuid())
+  token           String   @unique
+  openId          String
+  nickname        String
+  avatarUrl       String?
+  loginTicket     String?
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
 /// Merchant information displayed in the public Hotspots section.
 model MerchantPromotion {
   id           String   @id @default(cuid())

@@ -48,6 +48,11 @@ export default function RegisterPage() {
   const [cooldown, setCooldown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [role, setRole] = useState<"customer" | "driver">("customer");
+  const [wechatTicket, setWechatTicket] = useState<string | null>(null);
+
+  useEffect(() => {
+    setWechatTicket(new URLSearchParams(window.location.search).get("wechatTicket"));
+  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -114,6 +119,16 @@ export default function RegisterPage() {
     }
   }
 
+  async function finishWechatRegistration(nextRole: "customer" | "driver") {
+    if (!wechatTicket) { setRole(nextRole); return; }
+    setRole(nextRole); setSubmitting(true); setError(null);
+    try {
+      const response = await fetch("/api/auth/wechat/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: wechatTicket, role: nextRole }) });
+      if (!response.ok) { setError(t("errors.register_failed")); return; }
+      router.push(nextRole === "driver" ? "/account" : "/"); router.refresh();
+    } catch { setError(t("errors.register_failed")); } finally { setSubmitting(false); }
+  }
+
   return (
     <main className="mx-auto flex min-h-[70vh] w-full max-w-md items-center px-4 pb-36 pt-16">
       <motion.div
@@ -129,10 +144,10 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <div className="mb-5 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setRole("customer")} className={`rounded-xl border p-4 text-left transition-colors ${role === "customer" ? "border-emerald-500 bg-emerald-500/10" : "border-border bg-background"}`}><Users className="mb-2 h-5 w-5" /><span className="block font-semibold">{t("customerEntry")}</span><span className="mt-1 block text-xs text-muted-foreground">{t("customerEntryHint")}</span></button>
-              <button type="button" onClick={() => setRole("driver")} className={`rounded-xl border p-4 text-left transition-colors ${role === "driver" ? "border-sky-500 bg-sky-500/10" : "border-border bg-background"}`}><Car className="mb-2 h-5 w-5" /><span className="block font-semibold">{t("driverEntry")}</span><span className="mt-1 block text-xs text-muted-foreground">{t("driverEntryHint")}</span></button>
+              <button type="button" disabled={submitting} onClick={() => void finishWechatRegistration("customer")} className={`rounded-xl border p-4 text-left transition-colors ${role === "customer" ? "border-emerald-500 bg-emerald-500/10" : "border-border bg-background"}`}><Users className="mb-2 h-5 w-5" /><span className="block font-semibold">{t("customerEntry")}</span><span className="mt-1 block text-xs text-muted-foreground">{t("customerEntryHint")}</span></button>
+              <button type="button" disabled={submitting} onClick={() => void finishWechatRegistration("driver")} className={`rounded-xl border p-4 text-left transition-colors ${role === "driver" ? "border-sky-500 bg-sky-500/10" : "border-border bg-background"}`}><Car className="mb-2 h-5 w-5" /><span className="block font-semibold">{t("driverEntry")}</span><span className="mt-1 block text-xs text-muted-foreground">{t("driverEntryHint")}</span></button>
             </div>
-            <WechatAuthButton mode="register" role={role} />
+            {wechatTicket ? <p className="mb-4 rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-500">{t("wechatRegistrationHint")}</p> : <WechatAuthButton mode="register" role={role} />}
             <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
               {t("orEmail")}

@@ -263,6 +263,7 @@
     "driverEntryHint": "Manage your profile and receive customer trip requests",
     "customerIdentity": "Log in / register as customer",
     "driverIdentity": "Log in / register as driver",
+    "wechatRegistrationHint": "WeChat authorization is complete. Choose customer or driver to finish registration and sign in automatically.",
     "wechatLogin": "Continue with WeChat (auto-register)",
     "wechatRegister": "Authorize WeChat to sign in and register",
     "wechatQrTitle": "Authorize with WeChat",

@@ -10,8 +10,9 @@ export default function middleware(request: NextRequest) {
   const inWechat = /MicroMessenger/i.test(request.headers.get("user-agent") ?? "");
   const hasSession = Boolean(request.cookies.get("lian_session")?.value);
   const oauthFailed = request.nextUrl.searchParams.has("wechatError");
+  const hasRegistrationTicket = request.nextUrl.searchParams.has("wechatTicket");
 
-  if (inWechat && !hasSession && !oauthFailed) {
+  if (inWechat && !hasSession && !oauthFailed && !hasRegistrationTicket) {
     const firstSegment = request.nextUrl.pathname.split("/")[1];
     const locale = firstSegment === "en" ? "en" : "zh";
     const returnTo = `${request.nextUrl.pathname}${request.nextUrl.search}`;

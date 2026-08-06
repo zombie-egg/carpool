@@ -263,6 +263,7 @@
     "driverEntryHint": "维护资料并接收客户行程订单",
     "customerIdentity": "以客户身份登录 / 注册",
     "driverIdentity": "以司机身份登录 / 注册",
+    "wechatRegistrationHint": "微信授权已完成，请选择客户或司机身份，系统会自动完成注册并登录。",
     "wechatLogin": "微信登录（首次自动注册）",
     "wechatRegister": "微信授权登录并注册",
     "wechatQrTitle": "微信扫码授权",

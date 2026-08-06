@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, setSessionCookie } from "@/lib/auth";
@@ -64,6 +65,14 @@ function loginRedirect(request: NextRequest, locale: string, error?: string) {
   return NextResponse.redirect(url);
 }
 
+function registrationRedirect(request: NextRequest, locale: string, token: string) {
+  const url = new URL(`/${locale}/register`, request.nextUrl.origin);
+  url.searchParams.set("wechatTicket", token);
+  const response = NextResponse.redirect(url);
+  response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
+  return response;
+}
+
 // Exchanges the OAuth code, loads the WeChat profile and logs in or registers.
 export async function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get("locale") === "en" ? "en" : "zh";
@@ -112,8 +121,20 @@ export async function GET(request: NextRequest) {
     const existing = await prisma.user.findUnique({
       where: { wechatOpenId: profile.openid },
     });
-    const user = existing
-      ? await prisma.user.update({
+    if (!existing) {
+      const registrationTicket = await prisma.wechatRegistrationTicket.create({
+        data: {
+          token: randomBytes(32).toString("hex"),
+          openId: profile.openid,
+          nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`,
+          avatarUrl: profile.headimgurl || null,
+          loginTicket: ticket || null,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
+      return registrationRedirect(request, locale, registrationTicket.token);
+    }
+    const user = await prisma.user.update({
           where: { id: existing.id },
           data: {
             // Preserve user-edited values; fill only values that are missing.
@@ -123,15 +144,6 @@ export async function GET(request: NextRequest) {
             ...(!existing.avatarUrl && profile.headimgurl
               ? { avatarUrl: profile.headimgurl }
               : {}),
-          },
-        })
-      : await prisma.user.create({
-          data: {
-            wechatOpenId: profile.openid,
-            nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`,
-            avatarUrl: profile.headimgurl || null,
-            isAdmin: false,
-            role,
           },
         });
 
