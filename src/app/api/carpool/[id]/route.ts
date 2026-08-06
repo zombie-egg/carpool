@@ -63,7 +63,8 @@ export async function DELETE(
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 
-    await prisma.carpoolOrder.delete({ where: { id: params.id } });
+    if (user.isAdmin) await prisma.carpoolOrder.delete({ where: { id: params.id } });
+    else await prisma.carpoolOrder.update({ where: { id: params.id }, data: { hiddenByOrganizer: true } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error(`DELETE /api/carpool/${params.id} failed:`, error);

@@ -5,19 +5,13 @@ import {
   Car,
   Flame,
   Home,
-  Languages,
   List,
   LogIn,
-  Moon,
   PlusCircle,
-  Sun,
   UserRound,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
-import { LOCALE_STORAGE_KEY } from "@/lib/constants";
-import { applyTheme, THEME_STORAGE_KEY, type AppTheme } from "@/lib/theme";
 import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { useSession } from "@/components/features/use-session";
 
@@ -42,33 +36,14 @@ const DRIVER_NAV_ENTRIES: NavEntry[] = [
 // Bottom-center Apple-style dock: navigation, account, theme and language.
 export function DockNav() {
   const t = useTranslations("nav");
-  const tTheme = useTranslations("theme");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useSession();
-  const [theme, setTheme] = useState<AppTheme>("dark");
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    setTheme(stored === "light" ? "light" : "dark");
-  }, []);
 
   useEffect(() => {
     if (user?.role === "driver" && locale !== "zh") router.replace(pathname, { locale: "zh" });
   }, [user?.role, locale, pathname, router]);
-
-  const toggleLocale = () => {
-    const nextLocale: AppLocale = locale === "zh" ? "en" : "zh";
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
-    router.replace(pathname, { locale: nextLocale });
-  };
-
-  const toggleTheme = () => {
-    const next: AppTheme = theme === "dark" ? "light" : "dark";
-    applyTheme(next);
-    setTheme(next);
-  };
 
   const iconClass = "h-full w-full text-foreground/80";
   const driverMode = user?.role === "driver";
@@ -98,28 +73,6 @@ export function DockNav() {
               </DockItem>
             </Link>
           ))}
-          <button type="button" onClick={toggleTheme} aria-label={t("theme")}>
-            <DockItem>
-              <DockLabel>
-                {theme === "dark" ? tTheme("light") : tTheme("dark")}
-              </DockLabel>
-              <DockIcon>
-                {theme === "dark" ? (
-                  <Sun className={iconClass} />
-                ) : (
-                  <Moon className={iconClass} />
-                )}
-              </DockIcon>
-            </DockItem>
-          </button>
-          {!driverMode && <button type="button" onClick={toggleLocale} aria-label={t("language")}>
-            <DockItem>
-              <DockLabel>{t("language")}</DockLabel>
-              <DockIcon>
-                <Languages className={iconClass} />
-              </DockIcon>
-            </DockItem>
-          </button>}
           {/* Personal center lives at the far right of the dock. */}
           <Link
             href={user ? "/account" : "/login"}

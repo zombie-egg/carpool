@@ -63,14 +63,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "unauthorized" }, { status: 401 });
       }
       const own = await prisma.carpoolOrder.findMany({
-        where: { organizerId: user.id },
+        where: { organizerId: user.id, ...(user.isAdmin ? {} : { hiddenByOrganizer: false }) },
         orderBy: { createdAt: "desc" },
       });
       return NextResponse.json(own);
     }
 
     const user = await getSessionUser();
-    let where = { status: "recruiting" } as Record<string, unknown>;
+    let where = { status: "recruiting", hiddenByOrganizer: false } as Record<string, unknown>;
     if (user?.isAdmin) {
       where = {};
     } else if (user?.role === "driver") {

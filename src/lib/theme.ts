@@ -4,7 +4,7 @@ export const THEME_STORAGE_KEY = "lian-carpool-theme";
 export type AppTheme = "light" | "dark";
 
 // Inline script injected in <head> so the saved theme applies before paint.
-export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");var d=document.documentElement;if(t==="light"){d.classList.remove("dark");}else{d.classList.add("dark");}}catch(e){}})();`;
+export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");var d=document.documentElement;if(t==="dark"){d.classList.add("dark");}else{d.classList.remove("dark");}}catch(e){}})();`;
 
 export function applyTheme(theme: AppTheme): void {
   document.documentElement.classList.toggle("dark", theme === "dark");

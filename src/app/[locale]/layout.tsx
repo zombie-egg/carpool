@@ -13,6 +13,7 @@ import { DockNav } from "@/components/features/dock-nav";
 import { LocalePersistence } from "@/components/features/locale-persistence";
 import { ThemeSync } from "@/components/features/theme-sync";
 import { RoleChoiceGate } from "@/components/features/role-choice-gate";
+import { TopControls } from "@/components/features/top-controls";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -45,7 +46,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className="dark" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Applies the saved light/dark theme before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
@@ -62,6 +63,7 @@ export default async function LocaleLayout({
           <LocalePersistence />
           <ThemeSync />
           <RoleChoiceGate />
+          <TopControls />
         </NextIntlClientProvider>
       </body>
     </html>
