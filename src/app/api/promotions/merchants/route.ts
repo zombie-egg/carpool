@@ -4,14 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { validateMerchantPromotion } from "@/lib/promotion-validation";
 import type { MerchantPromotionPayload } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function GET() {
   try {
     const merchants = await prisma.merchantPromotion.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(merchants);
+    return NextResponse.json(merchants, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } });
   } catch (error) {
     console.error("GET /api/promotions/merchants failed:", error);
     return NextResponse.json({ error: "load_failed" }, { status: 500 });

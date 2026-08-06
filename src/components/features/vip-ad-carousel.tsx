@@ -14,7 +14,7 @@ export function VipAdCarousel() {
 
   const load = useCallback(async () => {
     try {
-      const response = await fetch("/api/promotions/vip", { cache: "no-store" });
+      const response = await fetch("/api/promotions/vip", { cache: "force-cache" });
       if (response.ok) {
         const advertisements = (await response.json()) as VipAdvertisementDTO[];
         const imageAdvertisements = advertisements.filter((item) => Boolean(item.imageData));

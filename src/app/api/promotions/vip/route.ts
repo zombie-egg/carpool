@@ -4,14 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { validateVipAdvertisement } from "@/lib/promotion-validation";
 import type { VipAdvertisementPayload } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function GET() {
   try {
     const advertisements = await prisma.vipAdvertisement.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(advertisements);
+    return NextResponse.json(advertisements, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } });
   } catch (error) {
     console.error("GET /api/promotions/vip failed:", error);
     return NextResponse.json({ error: "load_failed" }, { status: 500 });

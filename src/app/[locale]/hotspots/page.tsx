@@ -33,8 +33,8 @@ export default function HotspotsPage() {
     setLoadError(false);
     try {
       const [merchantResponse, vipResponse] = await Promise.all([
-        fetch("/api/promotions/merchants", { cache: "no-store" }),
-        fetch("/api/promotions/vip", { cache: "no-store" }),
+        fetch("/api/promotions/merchants", { cache: "force-cache" }),
+        fetch("/api/promotions/vip", { cache: "force-cache" }),
       ]);
       if (!merchantResponse.ok || !vipResponse.ok) throw new Error("load_failed");
       setMerchants((await merchantResponse.json()) as MerchantPromotionDTO[]);
