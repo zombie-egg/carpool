@@ -69,9 +69,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(own);
     }
 
-    const orders = await prisma.carpoolOrder.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const user = await getSessionUser();
+    let where = { status: "recruiting" } as Record<string, unknown>;
+    if (user?.isAdmin) {
+      where = {};
+    } else if (user?.role === "driver") {
+      where = { driverRequest: { driver: { userId: user.id } } };
+    }
+    const orders = await prisma.carpoolOrder.findMany({ where, orderBy: { createdAt: "desc" } });
     return NextResponse.json(orders);
   } catch (error) {
     console.error("GET /api/carpool failed:", error);

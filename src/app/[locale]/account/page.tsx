@@ -255,6 +255,7 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
   return (
     <div className="space-y-6">
       <CustomerDriverRequests />
+      {profile.isAdmin && <AdminStatsCard />}
       <Card className="border-border bg-card/70 backdrop-blur">
         <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
           <div className="space-y-1.5">
@@ -554,6 +555,16 @@ function CustomerDriverRequests() {
   const formatter = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", { dateStyle: "medium", timeStyle: "short" });
   return <Card className="border-border bg-card/70"><CardHeader><CardTitle>{t("myRequests")}</CardTitle></CardHeader><CardContent><ul className="divide-y divide-border">{items.map((item) => <li key={item.id} className="py-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-semibold">{item.departLocation} → {item.destination}</p><p className="mt-1 text-sm text-muted-foreground">{formatter.format(new Date(item.departTime))} · {t("seatsValue", { count: item.totalSeats })}</p><p className="text-sm text-muted-foreground">{t("driverName", { name: item.driver?.driverName || "-" })}</p></div><Badge variant="outline">{t(`status.${item.status}`)}</Badge></div>{item.status === "confirmed" && <p className="mt-2 text-sm text-emerald-500">{t("confirmedPrice", { price: item.finalPrice || "0" })}</p>}{item.status === "confirmed" && item.carpoolOrderId && <Button asChild variant="outline" size="sm" className="mt-3"><Link href="/account">{t("publishedToTrips")}</Link></Button>}</li>)}</ul></CardContent></Card>;
 }
+
+function AdminStatsCard() {
+  const t = useTranslations("adminStats");
+  const [stats, setStats] = useState<{ drivers: number; customers: number; total: number; completed: number; pending: number; full: number; expired: number } | null>(null);
+  useEffect(() => { void fetch("/api/admin/stats", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then(setStats).catch(() => undefined); }, []);
+  if (!stats) return null;
+  return <Card className="border-purple-500/30 bg-purple-500/5"><CardHeader><CardTitle>{t("title")}</CardTitle></CardHeader><CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4"><Stat label={t("drivers")} value={stats.drivers} /><Stat label={t("customers")} value={stats.customers} /><Stat label={t("totalOrders")} value={stats.total} /><Stat label={t("completed")} value={stats.completed} /><Stat label={t("pending")} value={stats.pending} /><Stat label={t("full")} value={stats.full} /><Stat label={t("expired")} value={stats.expired} /></CardContent></Card>;
+}
+
+function Stat({ label, value }: { label: string; value: number }) { return <div className="rounded-lg border border-border bg-card p-3 text-center"><p className="text-2xl font-bold">{value}</p><p className="mt-1 text-xs text-muted-foreground">{label}</p></div>; }
 
 function DriverAccountContent({ user }: { user: SessionUserDTO }) {
   const t = useTranslations("driverAccount");

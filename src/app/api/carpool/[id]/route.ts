@@ -24,12 +24,13 @@ export async function GET(
           },
           orderBy: { createdAt: "asc" },
         },
+        driverRequest: { include: { driver: true } },
       },
     });
     if (!trip) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
-    if (trip.organizerId !== user.id && !user.isAdmin) {
+    if (trip.organizerId !== user.id && !user.isAdmin && trip.driverRequest?.driver.userId !== user.id) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
     return NextResponse.json(trip);

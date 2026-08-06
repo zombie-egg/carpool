@@ -11,6 +11,7 @@
     "driver": "Driver Management Center",
     "driverInfo": "Active Drivers",
     "driverProfile": "Driver Profile",
+    "driverTrips": "My Trips",
     "language": "切换到中文",
     "account": "My Account",
     "login": "Log in",
@@ -302,8 +303,9 @@
     "title": "Request a trip with {driver}", "depart": "Departure *", "destination": "Destination *", "departTime": "Departure time *", "seats": "Seats needed *", "seatsValue": "{count} seats", "estimatedPrice": "Estimated total (¥) *", "contactType": "Your contact method *", "contactValue": "Your contact account *", "wechat": "WeChat", "phone": "Phone", "remark": "Note for the driver", "submit": "Send request and view driver contact", "contactUnlocked": "Driver contact details", "submitted": "Your request was sent. The driver will confirm the final price in their messages.", "done": "Done", "failed": "Could not send the request. Check the details and retry.", "driverOffline": "This driver has not enabled online orders yet.", "myRequests": "My driver trip requests", "driverName": "Driver: {name}", "confirmedPrice": "The driver confirmed the final total: ¥{price}. The trip is now in My published trips.", "publishedToTrips": "View my published trips", "status": { "pending": "Awaiting driver", "confirmed": "Confirmed and published", "rejected": "Declined by driver" }
   },
   "driverAccount": {
-    "driverBadge": "Driver account", "logout": "Log out", "profile": "Driver profile", "messages": "Messages and orders", "noMessages": "There are no customer trip requests yet.", "customer": "Customer", "finalPrice": "Confirmed final total (¥)", "confirm": "Confirm price and publish", "reject": "Decline request"
+    "driverBadge": "Driver account", "logout": "Log out", "profile": "Driver profile", "messages": "Messages and orders", "noMessages": "There are no customer trip requests yet.", "customer": "Customer", "finalPrice": "Confirmed final total (¥)", "confirm": "Confirm price and publish", "reject": "Decline request", "myTrips": "My Trips", "myTripsSubtitle": "View customer trips and confirmed orders associated with you."
   },
+  "adminStats": { "title": "Platform overview", "drivers": "Drivers", "customers": "Customers", "totalOrders": "Total orders", "completed": "Completed", "pending": "Open", "full": "Full", "expired": "Expired" },
   "account": {
     "title": "My Account",
     "subtitle": "Manage your account and the carpool trips you published.",

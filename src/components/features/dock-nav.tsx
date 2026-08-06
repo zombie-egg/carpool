@@ -22,7 +22,7 @@ import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { useSession } from "@/components/features/use-session";
 
 interface NavEntry {
-  key: "home" | "publish" | "list" | "hotspots" | "driver";
+  key: "home" | "publish" | "list" | "hotspots" | "driver" | "driverTrips";
   href: string;
   Icon: typeof Home;
 }
@@ -33,6 +33,10 @@ const NAV_ENTRIES: NavEntry[] = [
   { key: "list", href: "/carpool-list", Icon: List },
   { key: "hotspots", href: "/hotspots", Icon: Flame },
   { key: "driver", href: "/driver", Icon: Car },
+];
+const DRIVER_NAV_ENTRIES: NavEntry[] = [
+  { key: "driver", href: "/driver", Icon: Car },
+  { key: "driverTrips", href: "/driver-trips", Icon: List },
 ];
 
 // Bottom-center Apple-style dock: navigation, account, theme and language.
@@ -50,6 +54,10 @@ export function DockNav() {
     setTheme(stored === "light" ? "light" : "dark");
   }, []);
 
+  useEffect(() => {
+    if (user?.role === "driver" && locale !== "zh") router.replace(pathname, { locale: "zh" });
+  }, [user?.role, locale, pathname, router]);
+
   const toggleLocale = () => {
     const nextLocale: AppLocale = locale === "zh" ? "en" : "zh";
     window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
@@ -64,7 +72,7 @@ export function DockNav() {
 
   const iconClass = "h-full w-full text-foreground/80";
   const driverMode = user?.role === "driver";
-  const entries = driverMode ? NAV_ENTRIES.filter((entry) => entry.key === "driver") : NAV_ENTRIES;
+  const entries = driverMode ? DRIVER_NAV_ENTRIES : NAV_ENTRIES;
   const navLabel = (key: NavEntry["key"]) => t(key === "driver" ? (driverMode ? "driverProfile" : !user?.isAdmin ? "driverInfo" : "driver") : key);
 
   return (

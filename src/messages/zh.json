@@ -11,6 +11,7 @@
     "driver": "司机管理中心",
     "driverInfo": "在职司机信息",
     "driverProfile": "司机资料",
+    "driverTrips": "我的行程",
     "language": "Switch to English",
     "account": "个人账户",
     "login": "登录",
@@ -302,8 +303,9 @@
     "title": "联系 {driver} 发起拼单", "depart": "出发地 *", "destination": "目的地 *", "departTime": "出发时间 *", "seats": "需要座位数 *", "seatsValue": "{count} 座", "estimatedPrice": "预计总价（¥）*", "contactType": "你的联系方式 *", "contactValue": "联系方式账号 *", "wechat": "微信", "phone": "电话", "remark": "给司机的备注", "submit": "提交需求并查看司机联系方式", "contactUnlocked": "司机联系方式", "submitted": "需求已发送给司机，司机会在消息通知中确认最终价格。", "done": "完成", "failed": "提交失败，请检查信息后重试。", "driverOffline": "该司机暂未开通在线接单。", "myRequests": "我的司机拼单需求", "driverName": "司机：{name}", "confirmedPrice": "司机已确认最终总价：¥{price}，行程已自动发布到“我的发布”。", "publishedToTrips": "查看我的发布", "status": { "pending": "待司机确认", "confirmed": "已确认并发布", "rejected": "司机已拒绝" }
   },
   "driverAccount": {
-    "driverBadge": "司机账户", "logout": "退出登录", "profile": "司机资料", "messages": "消息通知与订单", "noMessages": "暂时没有客户行程需求。", "customer": "客户", "finalPrice": "确认后的最终总价（¥）", "confirm": "确认金额并自动发布", "reject": "拒绝该需求"
+    "driverBadge": "司机账户", "logout": "退出登录", "profile": "司机资料", "messages": "消息通知与订单", "noMessages": "暂时没有客户行程需求。", "customer": "客户", "finalPrice": "确认后的最终总价（¥）", "confirm": "确认金额并自动发布", "reject": "拒绝该需求", "myTrips": "我的行程", "myTripsSubtitle": "查看与你相关的客户行程和已确认订单。"
   },
+  "adminStats": { "title": "平台数据概览", "drivers": "司机数量", "customers": "客户数量", "totalOrders": "订单总数", "completed": "已完成", "pending": "未完成", "full": "已招满", "expired": "已过期" },
   "account": {
     "title": "个人中心",
     "subtitle": "管理你的账户和已发布的拼车行程。",
