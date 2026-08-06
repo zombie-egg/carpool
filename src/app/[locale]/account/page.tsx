@@ -26,12 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginGate } from "@/components/features/login-gate";
 import { cn } from "@/lib/utils";
 import type {
@@ -69,20 +64,139 @@ export default function AccountPage() {
         </p>
       </motion.header>
       <LoginGate message={t("needLogin")}>
-        {(user) => <><RoleSwitcher user={user} />{user.isAdmin&&<AdminDisputes />}{user.role === "driver" ? <DriverAccountContent user={user} /> : <AccountContent initialUser={user} />}</>}
+        {(user) => (
+          <>
+            <RoleSwitcher user={user} />
+            {user.isAdmin && <AdminDisputes />}
+            {user.role === "driver" ? (
+              <DriverAccountContent user={user} />
+            ) : (
+              <AccountContent initialUser={user} />
+            )}
+          </>
+        )}
       </LoginGate>
     </main>
   );
 }
 
-type AdminDispute={id:string;departLocation:string;destination:string;status:string;carpoolOrder?:{deletedByCustomer:boolean;deletedByDriver:boolean}|null};
-function AdminDisputes(){const [rows,setRows]=useState<AdminDispute[]>([]);const load=()=>fetch("/api/driver-requests?admin=1").then(r=>r.json()).then((d:AdminDispute[])=>setRows(Array.isArray(d)?d.filter(x=>x.status==="pending"||(x.carpoolOrder&&(x.carpoolOrder.deletedByCustomer!==x.carpoolOrder.deletedByDriver))):[]));useEffect(()=>{void load()},[]);if(!rows.length)return null;return <Card className="mb-6"><CardHeader><CardTitle>待协调司机订单</CardTitle></CardHeader><CardContent className="space-y-3">{rows.map(x=><div key={x.id} className="flex items-center justify-between rounded-lg border p-3"><span>{x.departLocation} → {x.destination} · {x.status}</span><Button variant="destructive" onClick={async()=>{await fetch(`/api/driver-requests/${x.id}`,{method:"DELETE"});void load()}}>管理员取消</Button></div>)}</CardContent></Card>}
+type AdminDispute = {
+  id: string;
+  departLocation: string;
+  destination: string;
+  status: string;
+  carpoolOrder?: {
+    deletedByCustomer: boolean;
+    deletedByDriver: boolean;
+  } | null;
+};
+function AdminDisputes() {
+  const [rows, setRows] = useState<AdminDispute[]>([]);
+  const load = () =>
+    fetch("/api/driver-requests?admin=1")
+      .then((r) => r.json())
+      .then((d: AdminDispute[]) =>
+        setRows(
+          Array.isArray(d)
+            ? d.filter(
+                (x) =>
+                  x.status === "pending" ||
+                  (x.carpoolOrder &&
+                    x.carpoolOrder.deletedByCustomer !==
+                      x.carpoolOrder.deletedByDriver),
+              )
+            : [],
+        ),
+      );
+  useEffect(() => {
+    void load();
+  }, []);
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>待协调司机订单</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {!rows.length && <p className="text-sm text-muted-foreground">当前没有待协调订单</p>}
+        {rows.map((x) => (
+          <div
+            key={x.id}
+            className="flex items-center justify-between rounded-lg border p-3"
+          >
+            <span>
+              {x.departLocation} → {x.destination} · {x.status}
+            </span>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                await fetch(`/api/driver-requests/${x.id}`, {
+                  method: "DELETE",
+                });
+                void load();
+              }}
+            >
+              管理员取消
+            </Button>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 function RoleSwitcher({ user }: { user: SessionUserDTO }) {
-  const router = useRouter(); const [message,setMessage]=useState(""); const [busy,setBusy]=useState(false);
+  const router = useRouter();
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
   if (user.isAdmin) return null;
-  async function change(role:"customer"|"driver") { setBusy(true); const r=await fetch("/api/auth/role",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({role})}); const d=await r.json(); setBusy(false); if(r.ok){setMessage(`身份已更新，本月还可更换 ${d.remaining} 次`);router.refresh();window.location.reload();}else setMessage(d.error==="monthly_limit"?"本月三次更换机会已用完":"身份更换失败"); }
-  return <Card className="mb-6"><CardHeader><CardTitle>账户身份</CardTitle></CardHeader><CardContent><p className="mb-3 text-sm text-muted-foreground">当前：{user.role==="driver"?"司机":"乘客"}。每个自然月最多更换三次。</p><div className="flex gap-3"><Button disabled={busy||user.role==="customer"} variant="outline" onClick={()=>change("customer")}>切换为乘客</Button><Button disabled={busy||user.role==="driver"} variant="outline" onClick={()=>change("driver")}>切换为司机</Button></div>{message&&<p className="mt-3 text-sm">{message}</p>}</CardContent></Card>;
+  async function change(role: "customer" | "driver") {
+    setBusy(true);
+    const r = await fetch("/api/auth/role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    const d = await r.json();
+    setBusy(false);
+    if (r.ok) {
+      setMessage(`身份已更新，本月还可更换 ${d.remaining} 次`);
+      router.refresh();
+      window.location.reload();
+    } else
+      setMessage(
+        d.error === "monthly_limit" ? "本月三次更换机会已用完" : "身份更换失败",
+      );
+  }
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>账户身份</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-3 text-sm text-muted-foreground">
+          当前：{user.role === "driver" ? "司机" : "乘客"}
+          。每个自然月最多更换三次。
+        </p>
+        <div className="flex gap-3">
+          <Button
+            disabled={busy || user.role === "customer"}
+            variant="outline"
+            onClick={() => change("customer")}
+          >
+            切换为乘客
+          </Button>
+          <Button
+            disabled={busy || user.role === "driver"}
+            variant="outline"
+            onClick={() => change("driver")}
+          >
+            切换为司机
+          </Button>
+        </div>
+        {message && <p className="mt-3 text-sm">{message}</p>}
+      </CardContent>
+    </Card>
+  );
 }
 
 function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
@@ -94,9 +208,13 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
   const router = useRouter();
   const [profile, setProfile] = useState(initialUser);
   const [nickname, setNickname] = useState(initialUser.nickname);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialUser.avatarUrl);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    initialUser.avatarUrl,
+  );
   const [savingProfile, setSavingProfile] = useState(false);
-  const [profileFeedback, setProfileFeedback] = useState<"success" | "error" | null>(null);
+  const [profileFeedback, setProfileFeedback] = useState<
+    "success" | "error" | null
+  >(null);
   const [trips, setTrips] = useState<CarpoolOrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -114,12 +232,17 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
 
   function handleAvatarFile(file: File | undefined) {
     setProfileFeedback(null);
-    if (!file || file.size > 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    if (
+      !file ||
+      file.size > 1024 * 1024 ||
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+    ) {
       setProfileFeedback("error");
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => setAvatarUrl(typeof reader.result === "string" ? reader.result : null);
+    reader.onload = () =>
+      setAvatarUrl(typeof reader.result === "string" ? reader.result : null);
     reader.onerror = () => setProfileFeedback("error");
     reader.readAsDataURL(file);
   }
@@ -173,7 +296,9 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
     setJoinedLoading(true);
     setJoinedLoadError(false);
     try {
-      const response = await fetch("/api/carpool/joined", { cache: "no-store" });
+      const response = await fetch("/api/carpool/joined", {
+        cache: "no-store",
+      });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       setJoinedTrips((await response.json()) as JoinedTripDTO[]);
     } catch {
@@ -192,15 +317,18 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
     setCancellingId(participation.id);
     setCancelFailedId(null);
     try {
-      const response = await fetch(`/api/carpool/${participation.trip.id}/join`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/carpool/${participation.trip.id}/join`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!response.ok) {
         setCancelFailedId(participation.id);
         return;
       }
       setJoinedTrips((current) =>
-        current.filter((item) => item.id !== participation.id)
+        current.filter((item) => item.id !== participation.id),
       );
     } catch {
       setCancelFailedId(participation.id);
@@ -257,7 +385,7 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
 
   const dateFormatter = new Intl.DateTimeFormat(
     locale === "zh" ? "zh-CN" : "en-US",
-    { dateStyle: "medium", timeStyle: "short" }
+    { dateStyle: "medium", timeStyle: "short" },
   );
 
   return (
@@ -310,27 +438,68 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
               <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary">
                 {avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatarUrl} alt={t("avatar")} className="h-full w-full object-cover" />
+                  <img
+                    src={avatarUrl}
+                    alt={t("avatar")}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <UserRound className="h-9 w-9 text-muted-foreground" />
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="profile-avatar" className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-accent">
+                <Label
+                  htmlFor="profile-avatar"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-accent"
+                >
                   <Camera className="h-4 w-4" />
                   {t("uploadAvatar")}
                 </Label>
-                <Input id="profile-avatar" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleAvatarFile(event.target.files?.[0])} />
-                <p className="text-xs text-muted-foreground">{t("avatarHint")}</p>
+                <Input
+                  id="profile-avatar"
+                  className="sr-only"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(event) =>
+                    handleAvatarFile(event.target.files?.[0])
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("avatarHint")}
+                </p>
               </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="profile-nickname">{t("nickname")}</Label>
-              <Input id="profile-nickname" maxLength={40} required value={nickname} onChange={(event) => setNickname(event.target.value)} />
+              <Input
+                id="profile-nickname"
+                maxLength={40}
+                required
+                value={nickname}
+                onChange={(event) => setNickname(event.target.value)}
+              />
             </div>
-            {profileFeedback && <p className={profileFeedback === "success" ? "text-sm text-emerald-500" : "text-sm text-red-400"}>{t(profileFeedback === "success" ? "profileSaved" : "profileSaveFailed")}</p>}
+            {profileFeedback && (
+              <p
+                className={
+                  profileFeedback === "success"
+                    ? "text-sm text-emerald-500"
+                    : "text-sm text-red-400"
+                }
+              >
+                {t(
+                  profileFeedback === "success"
+                    ? "profileSaved"
+                    : "profileSaveFailed",
+                )}
+              </p>
+            )}
             <Button type="submit" disabled={savingProfile}>
-              {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {savingProfile ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               {savingProfile ? t("savingProfile") : t("saveProfile")}
             </Button>
           </form>
@@ -458,13 +627,19 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
           {!joinedLoading && joinedLoadError && (
             <div className="flex flex-col items-center gap-3 py-10 text-muted-foreground">
               <p>{t("joinedLoadError")}</p>
-              <Button variant="outline" size="sm" onClick={() => void loadJoinedTrips()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void loadJoinedTrips()}
+              >
                 {tCommon("retry")}
               </Button>
             </div>
           )}
           {!joinedLoading && !joinedLoadError && joinedTrips.length === 0 && (
-            <p className="py-10 text-center text-muted-foreground">{t("noJoinedTrips")}</p>
+            <p className="py-10 text-center text-muted-foreground">
+              {t("noJoinedTrips")}
+            </p>
           )}
           {!joinedLoading && !joinedLoadError && joinedTrips.length > 0 && (
             <ul className="divide-y divide-border">
@@ -475,7 +650,10 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
                     ? trip.phoneNumber
                     : trip.wechatId || trip.phoneNumber;
                 return (
-                  <li key={participation.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+                  <li
+                    key={participation.id}
+                    className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+                  >
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
                         <span>{trip.departLocation}</span>
@@ -483,21 +661,48 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
                         <span>{trip.destination}</span>
                       </p>
                       <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" />{dateFormatter.format(new Date(trip.departTime))}</span>
-                        <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{t("joinedPartySize", { count: participation.partySize })}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarClock className="h-3.5 w-3.5" />
+                          {dateFormatter.format(new Date(trip.departTime))}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" />
+                          {t("joinedPartySize", {
+                            count: participation.partySize,
+                          })}
+                        </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("organizerInfo", { name: trip.organizer?.nickname || trip.organizerName })}
+                        {t("organizerInfo", {
+                          name: trip.organizer?.nickname || trip.organizerName,
+                        })}
                         {organizerContact ? ` · ${organizerContact}` : ""}
-                        {trip.organizer?.email ? ` · ${trip.organizer.email}` : ""}
+                        {trip.organizer?.email
+                          ? ` · ${trip.organizer.email}`
+                          : ""}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <Button variant="outline" size="sm" disabled={cancellingId === participation.id} onClick={() => void handleCancelJoin(participation)}>
-                        {cancellingId === participation.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-                        {cancellingId === participation.id ? t("cancellingJoin") : t("cancelJoin")}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={cancellingId === participation.id}
+                        onClick={() => void handleCancelJoin(participation)}
+                      >
+                        {cancellingId === participation.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <X className="h-3.5 w-3.5" />
+                        )}
+                        {cancellingId === participation.id
+                          ? t("cancellingJoin")
+                          : t("cancelJoin")}
                       </Button>
-                      {cancelFailedId === participation.id && <p className="mt-1 text-xs text-red-400">{t("cancelJoinFailed")}</p>}
+                      {cancelFailedId === participation.id && (
+                        <p className="mt-1 text-xs text-red-400">
+                          {t("cancelJoinFailed")}
+                        </p>
+                      )}
                     </div>
                   </li>
                 );
@@ -508,16 +713,49 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
       </Card>
 
       {(detailLoading || detailError || detail) && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" onMouseDown={(event) => { if (event.target === event.currentTarget && !detailLoading) { setDetail(null); setDetailError(false); } }}>
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !detailLoading) {
+              setDetail(null);
+              setDetailError(false);
+            }
+          }}
+        >
           <Card className="max-h-[85vh] w-full max-w-xl overflow-y-auto border-border bg-card shadow-2xl">
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <CardTitle>{tDetail("title")}</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => { setDetail(null); setDetailError(false); }} aria-label={tDetail("close")}><X className="h-4 w-4" /></Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setDetail(null);
+                  setDetailError(false);
+                }}
+                aria-label={tDetail("close")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </CardHeader>
             <CardContent className="space-y-5">
-              {detailLoading && <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin" /></div>}
-              {detailError && <p className="py-10 text-center text-red-400">{tDetail("loadError")}</p>}
-              {detail && <TripDetailContent detail={detail} dateFormatter={dateFormatter} />}
+              {detailLoading && (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              )}
+              {detailError && (
+                <p className="py-10 text-center text-red-400">
+                  {tDetail("loadError")}
+                </p>
+              )}
+              {detail && (
+                <TripDetailContent
+                  detail={detail}
+                  dateFormatter={dateFormatter}
+                />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -526,28 +764,91 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
   );
 }
 
-function TripDetailContent({ detail, dateFormatter }: { detail: TripDetailDTO; dateFormatter: Intl.DateTimeFormat }) {
+function TripDetailContent({
+  detail,
+  dateFormatter,
+}: {
+  detail: TripDetailDTO;
+  dateFormatter: Intl.DateTimeFormat;
+}) {
   const t = useTranslations("tripDetail");
   const tTrip = useTranslations("trip");
   return (
     <>
       <div className="space-y-1 rounded-lg border border-border p-4">
-        <p className="font-semibold">{detail.departLocation} <ArrowRight className="mx-1 inline h-4 w-4" /> {detail.destination}</p>
-        <p className="text-sm text-muted-foreground"><CalendarClock className="mr-1 inline h-4 w-4" />{dateFormatter.format(new Date(detail.departTime))}</p>
+        <p className="font-semibold">
+          {detail.departLocation} <ArrowRight className="mx-1 inline h-4 w-4" />{" "}
+          {detail.destination}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <CalendarClock className="mr-1 inline h-4 w-4" />
+          {dateFormatter.format(new Date(detail.departTime))}
+        </p>
       </div>
       <section className="space-y-2">
         <h3 className="font-semibold">{t("organizer")}</h3>
         <div className="rounded-lg border border-border p-3 text-sm text-muted-foreground">
-          <p className="text-foreground">{detail.organizer?.nickname || detail.organizerName}</p>
-          {detail.organizer?.email && <p><Mail className="mr-1 inline h-3.5 w-3.5" />{detail.organizer.email}</p>}
-          {detail.wechatId && <p><MessageCircle className="mr-1 inline h-3.5 w-3.5" />{tTrip("wechat")}: {detail.wechatId}</p>}
-          {detail.phoneNumber && <p><Phone className="mr-1 inline h-3.5 w-3.5" />{tTrip("phone")}: {detail.phoneNumber}</p>}
+          <p className="text-foreground">
+            {detail.organizer?.nickname || detail.organizerName}
+          </p>
+          {detail.organizer?.email && (
+            <p>
+              <Mail className="mr-1 inline h-3.5 w-3.5" />
+              {detail.organizer.email}
+            </p>
+          )}
+          {detail.wechatId && (
+            <p>
+              <MessageCircle className="mr-1 inline h-3.5 w-3.5" />
+              {tTrip("wechat")}: {detail.wechatId}
+            </p>
+          )}
+          {detail.phoneNumber && (
+            <p>
+              <Phone className="mr-1 inline h-3.5 w-3.5" />
+              {tTrip("phone")}: {detail.phoneNumber}
+            </p>
+          )}
         </div>
       </section>
       <section className="space-y-2">
         <h3 className="font-semibold">{t("participants")}</h3>
-        {detail.participants.length === 0 ? <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">{t("noParticipants")}</p> : (
-          <ul className="space-y-2">{detail.participants.map((participant) => <li key={participant.id} className="rounded-lg border border-border p-3 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium">{participant.user.nickname}</span><Badge variant="outline">{t("partySize", { count: participant.partySize })}</Badge></div><p className="mt-1 text-muted-foreground">{participant.contactType === "phone" ? <Phone className="mr-1 inline h-3.5 w-3.5" /> : <MessageCircle className="mr-1 inline h-3.5 w-3.5" />}{participant.contactValue}</p><p className="text-xs text-muted-foreground">{participant.user.email ? `${participant.user.email} · ` : ""}{t("joinedAt", { time: dateFormatter.format(new Date(participant.createdAt)) })}</p></li>)}</ul>
+        {detail.participants.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+            {t("noParticipants")}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {detail.participants.map((participant) => (
+              <li
+                key={participant.id}
+                className="rounded-lg border border-border p-3 text-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">
+                    {participant.user.nickname}
+                  </span>
+                  <Badge variant="outline">
+                    {t("partySize", { count: participant.partySize })}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-muted-foreground">
+                  {participant.contactType === "phone" ? (
+                    <Phone className="mr-1 inline h-3.5 w-3.5" />
+                  ) : (
+                    <MessageCircle className="mr-1 inline h-3.5 w-3.5" />
+                  )}
+                  {participant.contactValue}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {participant.user.email ? `${participant.user.email} · ` : ""}
+                  {t("joinedAt", {
+                    time: dateFormatter.format(new Date(participant.createdAt)),
+                  })}
+                </p>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </>
@@ -558,29 +859,185 @@ function CustomerDriverRequests() {
   const t = useTranslations("driverRequest");
   const locale = useLocale();
   const [items, setItems] = useState<DriverBookingRequestDTO[]>([]);
-  useEffect(() => { void fetch("/api/driver-requests", { cache: "no-store" }).then((response) => response.ok ? response.json() : []).then(setItems).catch(() => undefined); }, []);
+  useEffect(() => {
+    void fetch("/api/driver-requests", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : []))
+      .then(setItems)
+      .catch(() => undefined);
+  }, []);
   if (items.length === 0) return null;
-  const formatter = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", { dateStyle: "medium", timeStyle: "short" });
-  return <Card className="border-border bg-card/70"><CardHeader><CardTitle>{t("myRequests")}</CardTitle></CardHeader><CardContent><ul className="divide-y divide-border">{items.map((item) => <li key={item.id} className="py-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-semibold">{item.departLocation} → {item.destination}</p><p className="mt-1 text-sm text-muted-foreground">{formatter.format(new Date(item.departTime))} · {t("seatsValue", { count: item.totalSeats })}</p><p className="text-sm text-muted-foreground">{t("driverName", { name: item.driver?.driverName || "-" })}</p>{item.driver && (item.driver.phone || item.driver.wechat) && <div className="mt-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-500"><p className="font-medium">{t("driverContact")}</p>{item.driver.phone && <p className="mt-1"><Phone className="mr-1 inline h-3.5 w-3.5" />{item.driver.phone}</p>}{item.driver.wechat && <p className="mt-1"><MessageCircle className="mr-1 inline h-3.5 w-3.5" />{item.driver.wechat}</p>}</div>}</div><Badge variant="outline">{t(`status.${item.status}`)}</Badge></div>{item.status === "confirmed" && <p className="mt-2 text-sm text-emerald-500">{t("confirmedPrice", { price: item.finalPrice || "0" })}</p>}{item.status === "confirmed" && item.carpoolOrderId && <Button asChild variant="outline" size="sm" className="mt-3"><Link href="/account">{t("publishedToTrips")}</Link></Button>}</li>)}</ul></CardContent></Card>;
+  const formatter = new Intl.DateTimeFormat(
+    locale === "zh" ? "zh-CN" : "en-US",
+    { dateStyle: "medium", timeStyle: "short" },
+  );
+  return (
+    <Card className="border-border bg-card/70">
+      <CardHeader>
+        <CardTitle>{t("myRequests")}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="divide-y divide-border">
+          {items.map((item) => (
+            <li key={item.id} className="py-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold">
+                    {item.departLocation} → {item.destination}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {formatter.format(new Date(item.departTime))} ·{" "}
+                    {t("seatsValue", { count: item.totalSeats })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("driverName", { name: item.driver?.driverName || "-" })}
+                  </p>
+                  {item.driver && (item.driver.phone || item.driver.wechat) && (
+                    <div className="mt-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-500">
+                      <p className="font-medium">{t("driverContact")}</p>
+                      {item.driver.phone && (
+                        <p className="mt-1">
+                          <Phone className="mr-1 inline h-3.5 w-3.5" />
+                          {item.driver.phone}
+                        </p>
+                      )}
+                      {item.driver.wechat && (
+                        <p className="mt-1">
+                          <MessageCircle className="mr-1 inline h-3.5 w-3.5" />
+                          {item.driver.wechat}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <Badge variant="outline">{t(`status.${item.status}`)}</Badge>
+              </div>
+              {item.status === "confirmed" && (
+                <p className="mt-2 text-sm text-emerald-500">
+                  {t("confirmedPrice", { price: item.finalPrice || "0" })}
+                </p>
+              )}
+              {item.status === "confirmed" && item.carpoolOrderId && (
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link href="/account">{t("publishedToTrips")}</Link>
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
 }
 
 function AdminStatsCard() {
   const t = useTranslations("adminStats");
-  const [stats, setStats] = useState<{ drivers: number; customers: number; total: number; completed: number; pending: number; full: number; expired: number } | null>(null);
-  useEffect(() => { void fetch("/api/admin/stats", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then(setStats).catch(() => undefined); }, []);
+  const [stats, setStats] = useState<{
+    drivers: number;
+    customers: number;
+    total: number;
+    completed: number;
+    pending: number;
+    full: number;
+    expired: number;
+  } | null>(null);
+  useEffect(() => {
+    void fetch("/api/admin/stats", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then(setStats)
+      .catch(() => undefined);
+  }, []);
   if (!stats) return null;
-  return <Card className="border-purple-500/30 bg-purple-500/5"><CardHeader><CardTitle>{t("title")}</CardTitle></CardHeader><CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4"><Stat label={t("drivers")} value={stats.drivers} /><Stat label={t("customers")} value={stats.customers} /><Stat label={t("totalOrders")} value={stats.total} /><Stat label={t("completed")} value={stats.completed} /><Stat label={t("pending")} value={stats.pending} /><Stat label={t("full")} value={stats.full} /><Stat label={t("expired")} value={stats.expired} /></CardContent></Card>;
+  return (
+    <Card className="border-purple-500/30 bg-purple-500/5">
+      <CardHeader>
+        <CardTitle>{t("title")}</CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label={t("drivers")} value={stats.drivers} />
+        <Stat label={t("customers")} value={stats.customers} />
+        <Stat label={t("totalOrders")} value={stats.total} />
+        <Stat label={t("completed")} value={stats.completed} />
+        <Stat label={t("pending")} value={stats.pending} />
+        <Stat label={t("full")} value={stats.full} />
+        <Stat label={t("expired")} value={stats.expired} />
+      </CardContent>
+    </Card>
+  );
 }
 
-function Stat({ label, value }: { label: string; value: number }) { return <div className="rounded-lg border border-border bg-card p-3 text-center"><p className="text-2xl font-bold">{value}</p><p className="mt-1 text-xs text-muted-foreground">{label}</p></div>; }
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-3 text-center">
+      <p className="text-2xl font-bold">{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+    </div>
+  );
+}
 
 function DriverAccountContent({ user }: { user: SessionUserDTO }) {
   const t = useTranslations("driverAccount");
   const router = useRouter();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   useEffect(() => {
-    const load = () => void fetch("/api/driver-requests", { cache: "no-store" }).then((response) => response.ok ? response.json() : []).then((items: DriverBookingRequestDTO[]) => setPendingCount(items.filter((item) => item.status === "pending").length)).catch(() => setPendingCount(null));
-    load(); const timer = window.setInterval(load, 60_000); return () => window.clearInterval(timer);
+    const load = () =>
+      void fetch("/api/driver-requests", { cache: "no-store" })
+        .then((response) => (response.ok ? response.json() : []))
+        .then((items: DriverBookingRequestDTO[]) =>
+          setPendingCount(
+            items.filter((item) => item.status === "pending").length,
+          ),
+        )
+        .catch(() => setPendingCount(null));
+    load();
+    const timer = window.setInterval(load, 60_000);
+    return () => window.clearInterval(timer);
   }, []);
-  return <div className="space-y-6"><Card className="border-border bg-card/70"><CardContent className="flex items-center justify-between gap-4 pt-6"><div><p className="font-semibold">{user.nickname}</p><Badge className="mt-2" variant="outline">{t("driverBadge")}</Badge></div><Button variant="outline" onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/"); router.refresh(); }}><LogOut className="h-4 w-4" />{t("logout")}</Button></CardContent></Card><Card className="border-border bg-card/70"><CardHeader><CardTitle>{t("messages")}</CardTitle></CardHeader><CardContent><p className={pendingCount && pendingCount > 0 ? "font-medium text-amber-500" : "text-muted-foreground"}>{pendingCount === null ? t("checkingOrders") : pendingCount > 0 ? t("newOrders", { count: pendingCount }) : t("noNewOrders")}</p><p className="mt-2 text-xs text-muted-foreground">{t("refreshHint")}</p></CardContent></Card></div>;
+  return (
+    <div className="space-y-6">
+      <Card className="border-border bg-card/70">
+        <CardContent className="flex items-center justify-between gap-4 pt-6">
+          <div>
+            <p className="font-semibold">{user.nickname}</p>
+            <Badge className="mt-2" variant="outline">
+              {t("driverBadge")}
+            </Badge>
+          </div>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              router.push("/");
+              router.refresh();
+            }}
+          >
+            <LogOut className="h-4 w-4" />
+            {t("logout")}
+          </Button>
+        </CardContent>
+      </Card>
+      <Card className="border-border bg-card/70">
+        <CardHeader>
+          <CardTitle>{t("messages")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p
+            className={
+              pendingCount && pendingCount > 0
+                ? "font-medium text-amber-500"
+                : "text-muted-foreground"
+            }
+          >
+            {pendingCount === null
+              ? t("checkingOrders")
+              : pendingCount > 0
+                ? t("newOrders", { count: pendingCount })
+                : t("noNewOrders")}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {t("refreshHint")}
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
