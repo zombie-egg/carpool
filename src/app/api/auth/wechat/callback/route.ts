@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, setSessionCookie } from "@/lib/auth";
@@ -6,6 +6,17 @@ import { createSessionToken, setSessionCookie } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 const STATE_COOKIE = "wechat_oauth_state";
+
+function validSignedState(value: string | null) {
+  if (!value) return false;
+  const [nonce, signature] = value.split(".");
+  if (!nonce || !signature) return false;
+  const secret = process.env.AUTH_SECRET || process.env.WECHAT_APP_SECRET || "wechat-state";
+  const expected = createHmac("sha256", secret).update(nonce).digest("base64url");
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 interface TokenResponse {
   access_token?: string;
@@ -86,7 +97,8 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
   const expectedState = request.cookies.get(STATE_COOKIE)?.value;
-  if (!code || !state || !expectedState || state !== expectedState) {
+  const stateMatches = Boolean(state && ((expectedState && state === expectedState) || validSignedState(state)));
+  if (!code || !stateMatches) {
     return loginRedirect(request, locale, "invalid_state");
   }
 
