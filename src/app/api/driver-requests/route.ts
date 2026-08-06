@@ -19,7 +19,7 @@ export async function GET() {
     }
     return NextResponse.json(await prisma.driverBookingRequest.findMany({
       where: { customerId: user.id },
-      include: { driver: true },
+      include: { driver: true, carpoolOrder: true },
       orderBy: { createdAt: "desc" },
     }));
   } catch (error) {

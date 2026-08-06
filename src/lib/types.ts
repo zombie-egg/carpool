@@ -137,6 +137,7 @@ export interface DriverBookingRequestDTO {
   createdAt: string;
   customer?: { id: string; nickname: string; email: string | null };
   driver?: DriverInfoDTO;
+  carpoolOrder?: CarpoolOrderDTO | null;
 }
 
 export interface MerchantPromotionDTO {
