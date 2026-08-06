@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { createHmac, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { setSessionCookie } from "@/lib/auth";
@@ -6,6 +6,11 @@ import { setSessionCookie } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 const TICKET_TTL_MS = 5 * 60 * 1000;
+
+function signState(nonce: string) {
+  const secret = process.env.AUTH_SECRET || process.env.WECHAT_APP_SECRET || "wechat-state";
+  return createHmac("sha256", secret).update(nonce).digest("base64url");
+}
 
 // POST creates a one-time desktop login ticket and its mobile authorization URL.
 export async function POST(request: NextRequest) {
@@ -26,9 +31,21 @@ export async function POST(request: NextRequest) {
     },
   });
   const origin = (process.env.APP_URL?.trim() || request.nextUrl.origin).replace(/\/$/, "");
+  const nonce = randomBytes(24).toString("hex");
+  const state = `${nonce}.${signState(nonce)}`;
+  const callback = new URL(`${origin}/api/auth/wechat/callback`);
+  callback.searchParams.set("locale", locale);
+  callback.searchParams.set("ticket", token);
+  callback.searchParams.set("role", role);
+  const authorize = new URL("https://open.weixin.qq.com/connect/oauth2/authorize");
+  authorize.searchParams.set("appid", process.env.WECHAT_APP_ID.trim());
+  authorize.searchParams.set("redirect_uri", callback.toString());
+  authorize.searchParams.set("response_type", "code");
+  authorize.searchParams.set("scope", "snsapi_userinfo");
+  authorize.searchParams.set("state", state);
   return NextResponse.json({
     token,
-    authorizeUrl: `${origin}/api/auth/wechat?locale=${locale}&ticket=${token}&role=${role}`,
+    authorizeUrl: `${authorize.toString()}#wechat_redirect`,
     expiresIn: TICKET_TTL_MS / 1000,
   });
 }
