@@ -12,6 +12,7 @@ import { BackgroundBeams } from "@/components/ui/background-beams";
 import { DockNav } from "@/components/features/dock-nav";
 import { LocalePersistence } from "@/components/features/locale-persistence";
 import { ThemeSync } from "@/components/features/theme-sync";
+import { RoleChoiceGate } from "@/components/features/role-choice-gate";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -60,6 +61,7 @@ export default async function LocaleLayout({
           <DockNav />
           <LocalePersistence />
           <ThemeSync />
+          <RoleChoiceGate />
         </NextIntlClientProvider>
       </body>
     </html>

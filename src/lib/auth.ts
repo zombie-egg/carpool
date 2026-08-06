@@ -82,6 +82,7 @@ export interface SessionUser {
   loginMethod: "email" | "wechat";
   isAdmin: boolean;
   role: "customer" | "driver";
+  roleChosen: boolean;
 }
 
 // Reads the session cookie and loads the current user (null when logged out).
@@ -100,6 +101,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       wechatOpenId: true,
       isAdmin: true,
       role: true,
+      roleChosen: true,
     },
   });
   if (!user) return null;
@@ -109,6 +111,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     loginMethod: wechatOpenId ? "wechat" : "email",
     isAdmin: user.isAdmin,
     role: user.role === "driver" ? "driver" : "customer",
+    roleChosen: user.roleChosen,
   };
 }
 
