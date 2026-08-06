@@ -45,7 +45,11 @@ export async function GET(request: NextRequest) {
   authorize.searchParams.set("scope", "snsapi_userinfo");
   authorize.searchParams.set("state", state);
 
-  const response = NextResponse.redirect(`${authorize.toString()}#wechat_redirect`);
+  const target = `${authorize.toString()}#wechat_redirect`;
+  const response = new NextResponse(
+    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>微信授权</title><p>正在打开微信授权…</p><p><a href="${target}">点击继续</a></p><script>location.replace(${JSON.stringify(target)})</script>`,
+    { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } }
+  );
   response.cookies.set(STATE_COOKIE, state, {
     httpOnly: true,
     sameSite: "lax",
