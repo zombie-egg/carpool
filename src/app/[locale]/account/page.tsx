@@ -69,10 +69,17 @@ export default function AccountPage() {
         </p>
       </motion.header>
       <LoginGate message={t("needLogin")}>
-        {(user) => user.role === "driver" ? <DriverAccountContent user={user} /> : <AccountContent initialUser={user} />}
+        {(user) => <><RoleSwitcher user={user} />{user.role === "driver" ? <DriverAccountContent user={user} /> : <AccountContent initialUser={user} />}</>}
       </LoginGate>
     </main>
   );
+}
+
+function RoleSwitcher({ user }: { user: SessionUserDTO }) {
+  const router = useRouter(); const [message,setMessage]=useState(""); const [busy,setBusy]=useState(false);
+  if (user.isAdmin) return null;
+  async function change(role:"customer"|"driver") { setBusy(true); const r=await fetch("/api/auth/role",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({role})}); const d=await r.json(); setBusy(false); if(r.ok){setMessage(`身份已更新，本月还可更换 ${d.remaining} 次`);router.refresh();window.location.reload();}else setMessage(d.error==="monthly_limit"?"本月三次更换机会已用完":"身份更换失败"); }
+  return <Card className="mb-6"><CardHeader><CardTitle>账户身份</CardTitle></CardHeader><CardContent><p className="mb-3 text-sm text-muted-foreground">当前：{user.role==="driver"?"司机":"乘客"}。每个自然月最多更换三次。</p><div className="flex gap-3"><Button disabled={busy||user.role==="customer"} variant="outline" onClick={()=>change("customer")}>切换为乘客</Button><Button disabled={busy||user.role==="driver"} variant="outline" onClick={()=>change("driver")}>切换为司机</Button></div>{message&&<p className="mt-3 text-sm">{message}</p>}</CardContent></Card>;
 }
 
 function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {

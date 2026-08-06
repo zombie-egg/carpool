@@ -35,6 +35,8 @@ model User {
   /// Account role. Existing and unspecified accounts are customers.
   role           String            @default("customer")
   roleChosen     Boolean           @default(true)
+  roleChangeMonth String?
+  roleChangeCount Int              @default(0)
   createdAt      DateTime          @default(now())
   trips          CarpoolOrder[]
   participations TripParticipant[]
