@@ -916,6 +916,7 @@ function CustomerDriverRequests() {
                   {t("confirmedPrice", { price: item.finalPrice || "0" })}
                 </p>
               )}
+              {item.carpoolOrder?.deletedByCustomer !== item.carpoolOrder?.deletedByDriver && <p className="mt-2 text-sm text-amber-500">{item.carpoolOrder?.deletedByCustomer ? "已申请删除，等待司机确认" : "司机已申请删除，等待乘客确认"}</p>}
               {item.status === "confirmed" && item.carpoolOrderId && (
                 <Button asChild variant="outline" size="sm" className="mt-3">
                   <Link href="/account">{t("publishedToTrips")}</Link>

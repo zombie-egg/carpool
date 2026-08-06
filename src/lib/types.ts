@@ -20,6 +20,8 @@ export interface CarpoolOrderDTO {
   phoneNumber: string | null;
   remark: string | null;
   status: TripStatus;
+  deletedByCustomer?: boolean;
+  deletedByDriver?: boolean;
   createdAt: string;
   updatedAt: string;
 }

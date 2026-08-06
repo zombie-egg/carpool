@@ -133,6 +133,7 @@ export default function DriverTripsPage() {
                     ? ` · ${t("finalPriceValue", { price: item.finalPrice })}`
                     : ""}
                 </p>
+                {item.carpoolOrder?.deletedByCustomer !== item.carpoolOrder?.deletedByDriver && <p className="mt-3 text-sm text-amber-500">{item.carpoolOrder?.deletedByDriver ? "已申请删除，等待乘客确认" : "乘客已申请删除，等待司机确认"}</p>}
                 {item.status === "pending" && (
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                     <Input
