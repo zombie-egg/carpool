@@ -18,7 +18,7 @@ export function WechatAuthButton({ mode, role = "customer" }: { mode: "login" | 
   const [error, setError] = useState(false);
   const [mobileBrowser, setMobileBrowser] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<"customer" | "driver">(role);
+  const selectedRole = role;
   const pollTimer = useRef<number | null>(null);
 
   function stopPolling() {
@@ -29,7 +29,6 @@ export function WechatAuthButton({ mode, role = "customer" }: { mode: "login" | 
   }
 
   useEffect(() => stopPolling, []);
-  useEffect(() => setSelectedRole(role), [role]);
 
   async function openWechat() {
     const directUrl = `/api/auth/wechat?locale=${locale}&role=${selectedRole}`;
@@ -102,7 +101,6 @@ export function WechatAuthButton({ mode, role = "customer" }: { mode: "login" | 
 
   return (
     <>
-      {mode === "login" && <div className="mb-3 grid grid-cols-2 gap-2"><button type="button" onClick={() => setSelectedRole("customer")} className={`rounded-lg border px-3 py-2 text-sm ${selectedRole === "customer" ? "border-emerald-500 bg-emerald-500/10" : "border-border"}`}>{t("customerIdentity")}</button><button type="button" onClick={() => setSelectedRole("driver")} className={`rounded-lg border px-3 py-2 text-sm ${selectedRole === "driver" ? "border-sky-500 bg-sky-500/10" : "border-border"}`}>{t("driverIdentity")}</button></div>}
       <Button
         type="button"
         onClick={() => void openWechat()}
