@@ -34,6 +34,7 @@ model User {
   isAdmin        Boolean           @default(false)
   /// Account role. Existing and unspecified accounts are customers.
   role           String            @default("customer")
+  roleChosen     Boolean           @default(true)
   createdAt      DateTime          @default(now())
   trips          CarpoolOrder[]
   participations TripParticipant[]

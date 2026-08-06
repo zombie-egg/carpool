@@ -49,9 +49,11 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [role, setRole] = useState<"customer" | "driver">("customer");
   const [wechatTicket, setWechatTicket] = useState<string | null>(null);
+  const [wechatRole, setWechatRole] = useState(false);
 
   useEffect(() => {
     setWechatTicket(new URLSearchParams(window.location.search).get("wechatTicket"));
+    setWechatRole(new URLSearchParams(window.location.search).get("wechatRole") === "1");
   }, []);
 
   useEffect(() => {
@@ -120,6 +122,11 @@ export default function RegisterPage() {
   }
 
   async function finishWechatRegistration(nextRole: "customer" | "driver") {
+    if (wechatRole) {
+      setRole(nextRole); setSubmitting(true); setError(null);
+      try { const response = await fetch("/api/auth/role", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role: nextRole }) }); if (!response.ok) throw new Error(); router.push(nextRole === "driver" ? "/account" : "/"); router.refresh(); } catch { setError(t("errors.register_failed")); } finally { setSubmitting(false); }
+      return;
+    }
     if (!wechatTicket) { setRole(nextRole); return; }
     setRole(nextRole); setSubmitting(true); setError(null);
     try {

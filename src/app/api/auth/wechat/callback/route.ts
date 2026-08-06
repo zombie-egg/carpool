@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, setSessionCookie } from "@/lib/auth";
@@ -134,17 +134,10 @@ export async function GET(request: NextRequest) {
       where: { wechatOpenId: profile.openid },
     });
     if (!existing) {
-      const registrationTicket = await prisma.wechatRegistrationTicket.create({
-        data: {
-          token: randomBytes(32).toString("hex"),
-          openId: profile.openid,
-          nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`,
-          avatarUrl: profile.headimgurl || null,
-          loginTicket: ticket || null,
-          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-        },
-      });
-      return registrationRedirect(request, locale, registrationTicket.token);
+      const created = await prisma.user.create({ data: { wechatOpenId: profile.openid, nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`, avatarUrl: profile.headimgurl || null, role: "customer", roleChosen: false } });
+      if (ticket) await prisma.wechatLoginTicket.updateMany({ where: { token: ticket, status: "pending" }, data: { status: "authorized", userId: created.id } });
+      setSessionCookie(created.id);
+      return NextResponse.redirect(new URL(`/${locale}/register?wechatRole=1`, request.nextUrl.origin));
     }
     const user = await prisma.user.update({
           where: { id: existing.id },
