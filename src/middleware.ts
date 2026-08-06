@@ -11,8 +11,9 @@ export default function middleware(request: NextRequest) {
   const hasSession = Boolean(request.cookies.get("lian_session")?.value);
   const oauthFailed = request.nextUrl.searchParams.has("wechatError");
   const hasRegistrationTicket = request.nextUrl.searchParams.has("wechatTicket");
+  const hasRoleChoice = request.nextUrl.searchParams.get("wechatRole") === "1";
 
-  if (inWechat && !hasSession && !oauthFailed && !hasRegistrationTicket) {
+  if (inWechat && !hasSession && !oauthFailed && !hasRegistrationTicket && !hasRoleChoice) {
     const firstSegment = request.nextUrl.pathname.split("/")[1];
     const locale = firstSegment === "en" ? "en" : "zh";
     const returnTo = `${request.nextUrl.pathname}${request.nextUrl.search}`;
