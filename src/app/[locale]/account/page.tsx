@@ -69,11 +69,14 @@ export default function AccountPage() {
         </p>
       </motion.header>
       <LoginGate message={t("needLogin")}>
-        {(user) => <><RoleSwitcher user={user} />{user.role === "driver" ? <DriverAccountContent user={user} /> : <AccountContent initialUser={user} />}</>}
+        {(user) => <><RoleSwitcher user={user} />{user.isAdmin&&<AdminDisputes />}{user.role === "driver" ? <DriverAccountContent user={user} /> : <AccountContent initialUser={user} />}</>}
       </LoginGate>
     </main>
   );
 }
+
+type AdminDispute={id:string;departLocation:string;destination:string;status:string;carpoolOrder?:{deletedByCustomer:boolean;deletedByDriver:boolean}|null};
+function AdminDisputes(){const [rows,setRows]=useState<AdminDispute[]>([]);const load=()=>fetch("/api/driver-requests?admin=1").then(r=>r.json()).then((d:AdminDispute[])=>setRows(Array.isArray(d)?d.filter(x=>x.status==="pending"||(x.carpoolOrder&&(x.carpoolOrder.deletedByCustomer!==x.carpoolOrder.deletedByDriver))):[]));useEffect(()=>{void load()},[]);if(!rows.length)return null;return <Card className="mb-6"><CardHeader><CardTitle>待协调司机订单</CardTitle></CardHeader><CardContent className="space-y-3">{rows.map(x=><div key={x.id} className="flex items-center justify-between rounded-lg border p-3"><span>{x.departLocation} → {x.destination} · {x.status}</span><Button variant="destructive" onClick={async()=>{await fetch(`/api/driver-requests/${x.id}`,{method:"DELETE"});void load()}}>管理员取消</Button></div>)}</CardContent></Card>}
 
 function RoleSwitcher({ user }: { user: SessionUserDTO }) {
   const router = useRouter(); const [message,setMessage]=useState(""); const [busy,setBusy]=useState(false);

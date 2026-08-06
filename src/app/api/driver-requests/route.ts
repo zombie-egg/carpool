@@ -4,24 +4,25 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    if (user.isAdmin && request.nextUrl.searchParams.get("admin") === "1") return NextResponse.json(await prisma.driverBookingRequest.findMany({ include: { customer: true, driver: true, carpoolOrder: true }, orderBy: { createdAt: "desc" } }));
     if (user.role === "driver") {
       const profile = await prisma.driverInfo.findUnique({ where: { userId: user.id } });
       if (!profile) return NextResponse.json([]);
-      return NextResponse.json(await prisma.driverBookingRequest.findMany({
+      const rows = await prisma.driverBookingRequest.findMany({
         where: { driverId: profile.id },
-        include: { customer: { select: { id: true, nickname: true, email: true } } },
+        include: { customer: { select: { id: true, nickname: true, email: true } }, carpoolOrder: true },
         orderBy: { createdAt: "desc" },
-      }));
+      }); return NextResponse.json(rows.filter(x=>!x.carpoolOrder || !(x.carpoolOrder.deletedByCustomer&&x.carpoolOrder.deletedByDriver)));
     }
-    return NextResponse.json(await prisma.driverBookingRequest.findMany({
+    const rows = await prisma.driverBookingRequest.findMany({
       where: { customerId: user.id },
       include: { driver: true, carpoolOrder: true },
       orderBy: { createdAt: "desc" },
-    }));
+    }); return NextResponse.json(rows.filter(x=>!x.carpoolOrder || !(x.carpoolOrder.deletedByCustomer&&x.carpoolOrder.deletedByDriver)));
   } catch (error) {
     console.error("GET /api/driver-requests failed:", error);
     return NextResponse.json({ error: "load_failed" }, { status: 500 });

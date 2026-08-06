@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+  const user = await getSessionUser(); if (!user?.isAdmin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const booking = await prisma.driverBookingRequest.findUnique({ where: { id: params.id } }); if (!booking) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  await prisma.$transaction(async tx=>{await tx.driverBookingRequest.update({where:{id:booking.id},data:{status:"cancelled"}});if(booking.carpoolOrderId)await tx.carpoolOrder.update({where:{id:booking.carpoolOrderId},data:{deletedByCustomer:true,deletedByDriver:true}})}); return NextResponse.json({ok:true});
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await getSessionUser();
