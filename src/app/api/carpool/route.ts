@@ -63,18 +63,18 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "unauthorized" }, { status: 401 });
       }
       const own = await prisma.carpoolOrder.findMany({
-        where: { organizerId: user.id, ...(user.isAdmin ? {} : { hiddenByOrganizer: false }) },
+        where: { organizerId: user.id, ...(user.isAdmin ? {} : { hiddenByOrganizer: false, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] }) },
         orderBy: { createdAt: "desc" },
       });
       return NextResponse.json(own);
     }
 
     const user = await getSessionUser();
-    let where = { status: "recruiting", hiddenByOrganizer: false } as Record<string, unknown>;
+    let where = { status: "recruiting", hiddenByOrganizer: false, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] } as Record<string, unknown>;
     if (user?.isAdmin) {
       where = {};
     } else if (user?.role === "driver") {
-      where = { driverRequest: { driver: { userId: user.id } } };
+      where = { driverRequest: { driver: { userId: user.id } }, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] };
     }
     const orders = await prisma.carpoolOrder.findMany({ where, orderBy: { createdAt: "desc" } });
     return NextResponse.json(orders);

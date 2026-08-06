@@ -54,16 +54,19 @@ export async function DELETE(
 
     const order = await prisma.carpoolOrder.findUnique({
       where: { id: params.id },
-      select: { organizerId: true },
+      select: { organizerId: true, driverRequest: { select: { customerId: true, driver: { select: { userId: true } } } } },
     });
     if (!order) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
-    if (order.organizerId !== user.id && !user.isAdmin) {
+    const isDriver = order.driverRequest?.driver.userId === user.id;
+    const isCustomer = order.driverRequest?.customerId === user.id;
+    if (order.organizerId !== user.id && !isDriver && !isCustomer && !user.isAdmin) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 
     if (user.isAdmin) await prisma.carpoolOrder.delete({ where: { id: params.id } });
+    else if (order.driverRequest) await prisma.carpoolOrder.update({ where: { id: params.id }, data: isDriver ? { deletedByDriver: true } : { deletedByCustomer: true } });
     else await prisma.carpoolOrder.update({ where: { id: params.id }, data: { hiddenByOrganizer: true } });
     return NextResponse.json({ ok: true });
   } catch (error) {

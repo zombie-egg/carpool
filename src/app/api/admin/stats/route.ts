@@ -16,7 +16,7 @@ export async function GET() {
     prisma.carpoolOrder.count({ where: { status: "finished" } }),
     prisma.carpoolOrder.count({ where: { status: "full" } }),
     prisma.carpoolOrder.count({ where: { departTime: { lt: new Date() } } }),
-    prisma.carpoolOrder.aggregate({ where: { status: "finished" }, _sum: { totalPrice: true } }),
+    prisma.carpoolOrder.aggregate({ where: { status: "finished", driverRequest: { isNot: null } }, _sum: { totalPrice: true } }),
   ]);
   return NextResponse.json({ drivers, customers, total, completed: finished, pending: total - finished, full, expired, totalRevenue: Number(revenue._sum.totalPrice || 0) });
 }

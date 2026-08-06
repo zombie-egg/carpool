@@ -141,6 +141,8 @@ model CarpoolOrder {
   /// Trip status: "recruiting" | "full" | "finished".
   status         String            @default("recruiting")
   hiddenByOrganizer Boolean        @default(false)
+  deletedByCustomer Boolean        @default(false)
+  deletedByDriver   Boolean        @default(false)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   participants   TripParticipant[]
