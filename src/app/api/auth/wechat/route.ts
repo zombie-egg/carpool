@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
   // the callback even when it does not retain the temporary cookie.
   const nonce = randomBytes(24).toString("hex");
   const state = `${nonce}.${signState(nonce)}`;
-  const publicOrigin = (process.env.APP_URL?.trim() || request.nextUrl.origin).replace(/\/$/, "");
+  const configuredOrigin = process.env.APP_URL?.trim();
+  const publicOrigin = (configuredOrigin && !/localhost|127\.0\.0\.1/i.test(configuredOrigin)
+    ? configuredOrigin
+    : "https://carpools.zeabur.app").replace(/\/$/, "");
   const callbackUrl = new URL(`${publicOrigin}/api/auth/wechat/callback`);
   callbackUrl.searchParams.set("locale", locale);
   if (ticket) callbackUrl.searchParams.set("ticket", ticket);

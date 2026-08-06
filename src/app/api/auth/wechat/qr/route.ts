@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
       expiresAt: new Date(Date.now() + TICKET_TTL_MS),
     },
   });
-  const origin = (process.env.APP_URL?.trim() || request.nextUrl.origin).replace(/\/$/, "");
+  const configuredOrigin = process.env.APP_URL?.trim();
+  const origin = (configuredOrigin && !/localhost|127\.0\.0\.1/i.test(configuredOrigin)
+    ? configuredOrigin
+    : "https://carpools.zeabur.app").replace(/\/$/, "");
   const nonce = randomBytes(24).toString("hex");
   const state = `${nonce}.${signState(nonce)}`;
   const callback = new URL(`${origin}/api/auth/wechat/callback`);
