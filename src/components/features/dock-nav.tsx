@@ -63,6 +63,9 @@ export function DockNav() {
   };
 
   const iconClass = "h-full w-full text-foreground/80";
+  const driverMode = user?.role === "driver";
+  const entries = driverMode ? NAV_ENTRIES.filter((entry) => entry.key === "driver") : NAV_ENTRIES;
+  const navLabel = (key: NavEntry["key"]) => t(key === "driver" ? (driverMode ? "driverProfile" : !user?.isAdmin ? "driverInfo" : "driver") : key);
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center">
@@ -71,15 +74,15 @@ export function DockNav() {
           className="items-end gap-1 px-2 sm:gap-4 sm:px-4"
           magnification={40}
         >
-          {NAV_ENTRIES.map(({ key, href, Icon }) => (
+          {entries.map(({ key, href, Icon }) => (
             <Link
               key={key}
               href={href}
-              aria-label={t(key === "driver" && !user?.isAdmin ? "driverInfo" : key)}
+              aria-label={navLabel(key)}
             >
               <DockItem>
                 <DockLabel>
-                  {t(key === "driver" && !user?.isAdmin ? "driverInfo" : key)}
+                  {navLabel(key)}
                 </DockLabel>
                 <DockIcon>
                   <Icon className={iconClass} />
@@ -101,14 +104,14 @@ export function DockNav() {
               </DockIcon>
             </DockItem>
           </button>
-          <button type="button" onClick={toggleLocale} aria-label={t("language")}>
+          {!driverMode && <button type="button" onClick={toggleLocale} aria-label={t("language")}>
             <DockItem>
               <DockLabel>{t("language")}</DockLabel>
               <DockIcon>
                 <Languages className={iconClass} />
               </DockIcon>
             </DockItem>
-          </button>
+          </button>}
           {/* Personal center lives at the far right of the dock. */}
           <Link
             href={user ? "/account" : "/login"}

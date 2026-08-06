@@ -10,6 +10,7 @@
     "hotspots": "热点商家",
     "driver": "司机管理中心",
     "driverInfo": "在职司机信息",
+    "driverProfile": "司机资料",
     "language": "Switch to English",
     "account": "个人账户",
     "login": "登录",
@@ -170,6 +171,8 @@
     "subtitle": "登记校园司机并维护服务信息。",
     "infoTitle": "在职司机信息",
     "infoSubtitle": "查看管理员发布的在职司机及服务信息。",
+    "profileTitle": "司机资料",
+    "profileSubtitle": "完善车辆与服务信息，客户即可向你发起行程需求。",
     "needLogin": "管理司机信息前请先登录你的账户。",
     "adminOnly": "只有管理员账号才能管理司机信息。",
     "tabs": {
@@ -212,7 +215,8 @@
       "delete": "删除",
       "save": "保存修改",
       "saving": "保存中...",
-      "cancel": "取消"
+      "cancel": "取消",
+      "contact": "联系司机"
     },
     "confirmDelete": "确定删除该司机记录吗？此操作不可恢复。",
     "addSuccess": "司机添加成功。",
@@ -252,6 +256,10 @@
     "loggingIn": "登录中...",
     "register": "注册",
     "registering": "注册中...",
+    "customerEntry": "客户入口",
+    "customerEntryHint": "发布、加入和联系司机拼车",
+    "driverEntry": "司机入口",
+    "driverEntryHint": "维护资料并接收客户行程订单",
     "wechatLogin": "微信登录（首次自动注册）",
     "wechatRegister": "微信授权登录并注册",
     "wechatQrTitle": "微信扫码授权",
@@ -289,6 +297,12 @@
       "required": "该项为必填项。",
       "wechat_failed": "微信授权失败，请在微信内打开后重试。"
     }
+  },
+  "driverRequest": {
+    "title": "联系 {driver} 发起拼单", "depart": "出发地 *", "destination": "目的地 *", "departTime": "出发时间 *", "seats": "需要座位数 *", "seatsValue": "{count} 座", "estimatedPrice": "预计总价（¥）*", "contactType": "你的联系方式 *", "contactValue": "联系方式账号 *", "wechat": "微信", "phone": "电话", "remark": "给司机的备注", "submit": "提交需求并查看司机联系方式", "contactUnlocked": "司机联系方式", "submitted": "需求已发送给司机，司机会在消息通知中确认最终价格。", "done": "完成", "failed": "提交失败，请检查信息后重试。", "driverOffline": "该司机暂未开通在线接单。", "myRequests": "我的司机拼单需求", "driverName": "司机：{name}", "confirmedPrice": "司机已确认最终总价：¥{price}，行程已自动发布到“我的发布”。", "publishedToTrips": "查看我的发布", "status": { "pending": "待司机确认", "confirmed": "已确认并发布", "rejected": "司机已拒绝" }
+  },
+  "driverAccount": {
+    "driverBadge": "司机账户", "logout": "退出登录", "profile": "司机资料", "messages": "消息通知与订单", "noMessages": "暂时没有客户行程需求。", "customer": "客户", "finalPrice": "确认后的最终总价（¥）", "confirm": "确认金额并自动发布", "reject": "拒绝该需求"
   },
   "account": {
     "title": "个人中心",

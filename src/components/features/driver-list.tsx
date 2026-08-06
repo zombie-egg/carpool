@@ -32,6 +32,7 @@ interface DriverListProps {
   readOnly?: boolean;
   onUpdated?: (driver: DriverInfoDTO) => void;
   onDeleted?: (id: string) => void;
+  onContact?: (driver: DriverInfoDTO) => void;
 }
 
 // Driver cards with inline edit and delete actions.
@@ -40,6 +41,7 @@ export function DriverList({
   readOnly = false,
   onUpdated,
   onDeleted,
+  onContact,
 }: DriverListProps) {
   const t = useTranslations("driver");
   const locale = useLocale();
@@ -125,10 +127,10 @@ export function DriverList({
               </CardHeader>
               <CardContent className="space-y-2.5 text-sm text-foreground/80">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                  <span className="inline-flex items-center gap-1.5">
+                  {driver.phone && <span className="inline-flex items-center gap-1.5">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     {driver.phone}
-                  </span>
+                  </span>}
                   {driver.wechat && (
                     <span className="inline-flex items-center gap-1.5">
                       <MessageCircle className="h-4 w-4 text-muted-foreground" />
@@ -164,6 +166,7 @@ export function DriverList({
                   </div>
                 )}
               </CardContent>
+              {readOnly && onContact && <CardFooter><Button className="w-full" onClick={() => onContact(driver)}><MessageCircle className="h-4 w-4" />{t("actions.contact")}</Button></CardFooter>}
               {!readOnly && (
                 <CardFooter className="flex-col items-stretch gap-2">
                   <div className="flex gap-2">

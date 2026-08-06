@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic";
 // GET /api/drivers — list all drivers, newest first.
 export async function GET() {
   try {
+    const user = await getSessionUser();
     const drivers = await prisma.driverInfo.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(drivers);
+    return NextResponse.json(drivers.map((driver) => user?.isAdmin || driver.userId === user?.id ? driver : { ...driver, phone: "", wechat: null }));
   } catch (error) {
     console.error("GET /api/drivers failed:", error);
     return NextResponse.json(
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    if (!user.isAdmin) {
+    if (!user.isAdmin && user.role !== "driver") {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 
@@ -42,8 +43,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (!user.isAdmin) {
+      const existing = await prisma.driverInfo.findUnique({ where: { userId: user.id } });
+      if (existing) return NextResponse.json({ error: "profile_exists" }, { status: 409 });
+    }
     const driver = await prisma.driverInfo.create({
-      data: driverDataFromPayload(payload),
+      data: { ...driverDataFromPayload(payload), ...(!user.isAdmin ? { userId: user.id } : {}) },
     });
     return NextResponse.json(driver, { status: 201 });
   } catch (error) {

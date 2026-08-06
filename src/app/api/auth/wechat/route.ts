@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
 
   const locale = request.nextUrl.searchParams.get("locale") === "en" ? "en" : "zh";
   const ticket = request.nextUrl.searchParams.get("ticket")?.trim();
+  const role = request.nextUrl.searchParams.get("role") === "driver" ? "driver" : "customer";
   const requestedReturnTo = request.nextUrl.searchParams.get("returnTo")?.trim();
   const returnTo =
     requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
   const callbackUrl = new URL(`${publicOrigin}/api/auth/wechat/callback`);
   callbackUrl.searchParams.set("locale", locale);
   if (ticket) callbackUrl.searchParams.set("ticket", ticket);
+  callbackUrl.searchParams.set("role", role);
   if (returnTo) callbackUrl.searchParams.set("returnTo", returnTo);
   const authorize = new URL("https://open.weixin.qq.com/connect/oauth2/authorize");
   authorize.searchParams.set("appid", appId);

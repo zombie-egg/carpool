@@ -12,8 +12,9 @@ export async function POST(request: NextRequest) {
   if (!process.env.WECHAT_APP_ID || !process.env.WECHAT_APP_SECRET) {
     return NextResponse.json({ error: "wechat_not_configured" }, { status: 503 });
   }
-  const payload = (await request.json().catch(() => ({}))) as { locale?: string };
+  const payload = (await request.json().catch(() => ({}))) as { locale?: string; role?: string };
   const locale = payload.locale === "en" ? "en" : "zh";
+  const role = payload.role === "driver" ? "driver" : "customer";
   const token = randomBytes(32).toString("hex");
   await prisma.wechatLoginTicket.deleteMany({
     where: { expiresAt: { lt: new Date() } },
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
   const origin = (process.env.APP_URL?.trim() || request.nextUrl.origin).replace(/\/$/, "");
   return NextResponse.json({
     token,
-    authorizeUrl: `${origin}/api/auth/wechat?locale=${locale}&ticket=${token}`,
+    authorizeUrl: `${origin}/api/auth/wechat?locale=${locale}&ticket=${token}&role=${role}`,
     expiresIn: TICKET_TTL_MS / 1000,
   });
 }

@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
-export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
+export function WechatAuthButton({ mode, role = "customer" }: { mode: "login" | "register"; role?: "customer" | "driver" }) {
   const t = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
@@ -30,7 +30,7 @@ export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
   useEffect(() => stopPolling, []);
 
   async function openWechat() {
-    const directUrl = `/api/auth/wechat?locale=${locale}`;
+    const directUrl = `/api/auth/wechat?locale=${locale}&role=${role}`;
     if (/MicroMessenger/i.test(navigator.userAgent)) {
       window.location.href = directUrl;
       return;
@@ -47,7 +47,7 @@ export function WechatAuthButton({ mode }: { mode: "login" | "register" }) {
       const response = await fetch("/api/auth/wechat/qr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale }),
+        body: JSON.stringify({ locale, role }),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as {

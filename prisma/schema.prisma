@@ -32,9 +32,13 @@ model User {
   wechatOpenId   String?           @unique
   /// Persisted role; WeChat admin binding survives nickname changes.
   isAdmin        Boolean           @default(false)
+  /// Account role. Existing and unspecified accounts are customers.
+  role           String            @default("customer")
   createdAt      DateTime          @default(now())
   trips          CarpoolOrder[]
   participations TripParticipant[]
+  driverProfile  DriverInfo?
+  driverRequests DriverBookingRequest[] @relation("CustomerDriverRequests")
 }
 
 /// Short-lived handoff token used to log a desktop browser in after QR scan.
@@ -122,6 +126,7 @@ model CarpoolOrder {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   participants   TripParticipant[]
+  driverRequest  DriverBookingRequest?
 
   @@index([departTime])
   @@index([status])
@@ -147,6 +152,9 @@ model TripParticipant {
 model DriverInfo {
   /// Primary key (collision-resistant cuid).
   id                  String   @id @default(cuid())
+  /// Registered driver account. Null for legacy records created by an admin.
+  userId              String?  @unique
+  user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Driver full name.
   driverName          String
   /// Driver phone number (required).
@@ -172,6 +180,33 @@ model DriverInfo {
   /// Supplementary notes: trunk space, smoking permission, other reminders.
   carRemark           String?
   createdAt           DateTime @default(now())
+  requests            DriverBookingRequest[]
 
   @@index([operationEndDate])
+}
+
+/// A customer's structured inquiry to a driver. Driver confirmation creates a trip.
+model DriverBookingRequest {
+  id               String       @id @default(cuid())
+  customerId       String
+  driverId         String
+  departLocation   String
+  destination      String
+  departTime       DateTime
+  totalSeats       Int
+  estimatedPrice   Decimal      @db.Decimal(10, 2)
+  finalPrice       Decimal?     @db.Decimal(10, 2)
+  customerContactType  String
+  customerContactValue String
+  remark           String?
+  status           String       @default("pending")
+  carpoolOrderId   String?      @unique
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  customer         User         @relation("CustomerDriverRequests", fields: [customerId], references: [id], onDelete: Cascade)
+  driver           DriverInfo   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  carpoolOrder     CarpoolOrder? @relation(fields: [carpoolOrderId], references: [id])
+
+  @@index([customerId, createdAt])
+  @@index([driverId, status, createdAt])
 }

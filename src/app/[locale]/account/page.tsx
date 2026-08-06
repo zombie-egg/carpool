@@ -33,6 +33,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LoginGate } from "@/components/features/login-gate";
+import { DriverForm } from "@/components/features/driver-form";
 import { cn } from "@/lib/utils";
 import type {
   CarpoolOrderDTO,
@@ -40,6 +41,8 @@ import type {
   TripDetailDTO,
   TripStatus,
   SessionUserDTO,
+  DriverInfoDTO,
+  DriverBookingRequestDTO,
 } from "@/lib/types";
 
 const STATUS_STYLES: Record<TripStatus, string> = {
@@ -68,7 +71,7 @@ export default function AccountPage() {
         </p>
       </motion.header>
       <LoginGate message={t("needLogin")}>
-        {(user) => <AccountContent initialUser={user} />}
+        {(user) => user.role === "driver" ? <DriverAccountContent user={user} /> : <AccountContent initialUser={user} />}
       </LoginGate>
     </main>
   );
@@ -251,6 +254,7 @@ function AccountContent({ initialUser }: { initialUser: SessionUserDTO }) {
 
   return (
     <div className="space-y-6">
+      <CustomerDriverRequests />
       <Card className="border-border bg-card/70 backdrop-blur">
         <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
           <div className="space-y-1.5">
@@ -539,4 +543,36 @@ function TripDetailContent({ detail, dateFormatter }: { detail: TripDetailDTO; d
       </section>
     </>
   );
+}
+
+function CustomerDriverRequests() {
+  const t = useTranslations("driverRequest");
+  const locale = useLocale();
+  const [items, setItems] = useState<DriverBookingRequestDTO[]>([]);
+  useEffect(() => { void fetch("/api/driver-requests", { cache: "no-store" }).then((response) => response.ok ? response.json() : []).then(setItems).catch(() => undefined); }, []);
+  if (items.length === 0) return null;
+  const formatter = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", { dateStyle: "medium", timeStyle: "short" });
+  return <Card className="border-border bg-card/70"><CardHeader><CardTitle>{t("myRequests")}</CardTitle></CardHeader><CardContent><ul className="divide-y divide-border">{items.map((item) => <li key={item.id} className="py-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-semibold">{item.departLocation} → {item.destination}</p><p className="mt-1 text-sm text-muted-foreground">{formatter.format(new Date(item.departTime))} · {t("seatsValue", { count: item.totalSeats })}</p><p className="text-sm text-muted-foreground">{t("driverName", { name: item.driver?.driverName || "-" })}</p></div><Badge variant="outline">{t(`status.${item.status}`)}</Badge></div>{item.status === "confirmed" && <p className="mt-2 text-sm text-emerald-500">{t("confirmedPrice", { price: item.finalPrice || "0" })}</p>}{item.status === "confirmed" && item.carpoolOrderId && <Button asChild variant="outline" size="sm" className="mt-3"><Link href="/account">{t("publishedToTrips")}</Link></Button>}</li>)}</ul></CardContent></Card>;
+}
+
+function DriverAccountContent({ user }: { user: SessionUserDTO }) {
+  const t = useTranslations("driverAccount");
+  const tRequest = useTranslations("driverRequest");
+  const locale = useLocale();
+  const router = useRouter();
+  const [profile, setProfile] = useState<DriverInfoDTO | undefined>();
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [requests, setRequests] = useState<DriverBookingRequestDTO[]>([]);
+  const [prices, setPrices] = useState<Record<string, string>>({});
+  const [processing, setProcessing] = useState<string | null>(null);
+
+  useEffect(() => { void Promise.all([fetch("/api/drivers", { cache: "no-store" }), fetch("/api/driver-requests", { cache: "no-store" })]).then(async ([driversResponse, requestsResponse]) => { const drivers = driversResponse.ok ? await driversResponse.json() as DriverInfoDTO[] : []; setProfile(drivers.find((item) => item.userId === user.id)); setRequests(requestsResponse.ok ? await requestsResponse.json() as DriverBookingRequestDTO[] : []); }).finally(() => setProfileLoading(false)); }, [user.id]);
+  const formatter = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", { dateStyle: "medium", timeStyle: "short" });
+
+  async function process(item: DriverBookingRequestDTO, action: "confirm" | "reject") {
+    setProcessing(item.id);
+    try { const response = await fetch(`/api/driver-requests/${item.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, finalPrice: Number(prices[item.id]) }) }); if (!response.ok) return; const updated = await response.json() as DriverBookingRequestDTO; setRequests((current) => current.map((request) => request.id === updated.id ? updated : request)); } finally { setProcessing(null); }
+  }
+
+  return <div className="space-y-6"><Card className="border-border bg-card/70"><CardContent className="flex items-center justify-between gap-4 pt-6"><div><p className="font-semibold">{user.nickname}</p><Badge className="mt-2" variant="outline">{t("driverBadge")}</Badge></div><Button variant="outline" onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/"); router.refresh(); }}><LogOut className="h-4 w-4" />{t("logout")}</Button></CardContent></Card><Card className="border-border bg-card/70"><CardHeader><CardTitle>{t("profile")}</CardTitle></CardHeader><CardContent>{profileLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <DriverForm initialDriver={profile} onSaved={(saved) => setProfile(saved)} />}</CardContent></Card><Card className="border-border bg-card/70"><CardHeader><CardTitle>{t("messages")}</CardTitle></CardHeader><CardContent>{requests.length === 0 ? <p className="py-8 text-center text-muted-foreground">{t("noMessages")}</p> : <ul className="divide-y divide-border">{requests.map((item) => <li key={item.id} className="space-y-3 py-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-semibold">{item.customer?.nickname || t("customer")} · {item.departLocation} → {item.destination}</p><p className="mt-1 text-sm text-muted-foreground">{formatter.format(new Date(item.departTime))} · {tRequest("seatsValue", { count: item.totalSeats })} · ¥{item.estimatedPrice}</p><p className="mt-1 text-sm"><MessageCircle className="mr-1 inline h-4 w-4" />{item.customerContactValue}</p>{item.remark && <p className="mt-1 text-sm text-muted-foreground">{item.remark}</p>}</div><Badge variant="outline">{tRequest(`status.${item.status}`)}</Badge></div>{item.status === "pending" && <div className="flex flex-col gap-2 sm:flex-row"><Input type="number" min="0" step="0.01" placeholder={t("finalPrice")} value={prices[item.id] || ""} onChange={(event) => setPrices({ ...prices, [item.id]: event.target.value })} /><Button disabled={processing === item.id || !prices[item.id]} onClick={() => void process(item, "confirm")}>{t("confirm")}</Button><Button variant="destructive" disabled={processing === item.id} onClick={() => void process(item, "reject")}>{t("reject")}</Button></div>}{item.status === "confirmed" && <p className="text-sm text-emerald-500">{tRequest("confirmedPrice", { price: item.finalPrice || "0" })}</p>}</li>)}</ul>}</CardContent></Card></div>;
 }

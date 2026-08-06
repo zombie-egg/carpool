@@ -11,6 +11,7 @@ interface RegisterPayload {
   code?: string;
   nickname?: string;
   password?: string;
+  role?: string;
 }
 
 // POST /api/auth/register — verify the emailed code and create the account.
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest) {
     const code = payload.code?.trim() ?? "";
     const nickname = payload.nickname?.trim() ?? "";
     const password = payload.password ?? "";
+    const role = payload.role === "driver" ? "driver" : "customer";
 
     if (!EMAIL_REGEX.test(email)) {
       return NextResponse.json({ error: "invalid_email" }, { status: 400 });
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await prisma.user.create({
-      data: { email, nickname, passwordHash: hashPassword(password) },
+      data: { email, nickname, passwordHash: hashPassword(password), role },
     });
     await prisma.emailCode.deleteMany({ where: { email } });
 

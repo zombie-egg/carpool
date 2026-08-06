@@ -27,7 +27,9 @@ export async function PUT(
     if (!user) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    if (!user.isAdmin) {
+    const existing = await prisma.driverInfo.findUnique({ where: { id: params.id } });
+    if (!existing) return NextResponse.json({ error: "Driver not found" }, { status: 404 });
+    if (!user.isAdmin && existing.userId !== user.id) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DriverForm } from "@/components/features/driver-form";
 import { DriverList } from "@/components/features/driver-list";
 import { useSession } from "@/components/features/use-session";
+import { DriverRequestDialog } from "@/components/features/driver-request-dialog";
 import type { DriverInfoDTO } from "@/lib/types";
 
 // Driver Management Center: add drivers and view/edit/delete existing records.
@@ -19,8 +20,11 @@ export default function DriverPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [requestDriver, setRequestDriver] = useState<DriverInfoDTO | null>(null);
   const { user, loading: sessionLoading } = useSession();
   const isAdmin = user?.isAdmin === true;
+  const isDriver = user?.role === "driver";
+  const myProfile = drivers.find((driver) => driver.userId === user?.id);
 
   const loadDrivers = useCallback(async () => {
     setLoading(true);
@@ -55,10 +59,10 @@ export default function DriverPage() {
         className="mb-8"
       >
         <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
-          {t(isAdmin ? "title" : "infoTitle")}
+          {t(isDriver ? "profileTitle" : isAdmin ? "title" : "infoTitle")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          {t(isAdmin ? "subtitle" : "infoSubtitle")}
+          {t(isDriver ? "profileSubtitle" : isAdmin ? "subtitle" : "infoSubtitle")}
         </p>
       </motion.header>
 
@@ -74,6 +78,8 @@ export default function DriverPage() {
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>{tCommon("loading")}</span>
         </div>
+      ) : isDriver ? (
+        loading ? <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />{tCommon("loading")}</div> : <DriverForm initialDriver={myProfile} onSaved={(saved) => { setDrivers((current) => myProfile ? current.map((item) => item.id === saved.id ? saved : item) : [saved, ...current]); showNotice(t(myProfile ? "updateSuccess" : "addSuccess")); }} />
       ) : isAdmin ? (
         <Tabs defaultValue="add">
           <TabsList className="bg-card/80">
@@ -150,9 +156,10 @@ export default function DriverPage() {
               </Button>
             </div>
           )}
-          {!loading && !loadError && <DriverList drivers={drivers} readOnly />}
+          {!loading && !loadError && <DriverList drivers={drivers} readOnly onContact={user?.role === "customer" ? setRequestDriver : undefined} />}
         </div>
       )}
+      {requestDriver && <DriverRequestDialog driver={requestDriver} onClose={() => setRequestDriver(null)} />}
     </main>
   );
 }

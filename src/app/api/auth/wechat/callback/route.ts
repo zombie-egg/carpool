@@ -68,6 +68,7 @@ function loginRedirect(request: NextRequest, locale: string, error?: string) {
 export async function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get("locale") === "en" ? "en" : "zh";
   const ticket = request.nextUrl.searchParams.get("ticket")?.trim();
+  const role = request.nextUrl.searchParams.get("role") === "driver" ? "driver" : "customer";
   const requestedReturnTo = request.nextUrl.searchParams.get("returnTo")?.trim();
   const returnTo =
     requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
@@ -130,6 +131,7 @@ export async function GET(request: NextRequest) {
             nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`,
             avatarUrl: profile.headimgurl || null,
             isAdmin: false,
+            role,
           },
         });
 

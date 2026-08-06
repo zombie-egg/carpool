@@ -75,6 +75,7 @@ export interface TripDetailDTO extends CarpoolOrderDTO {
 // DriverInfo as serialized over JSON.
 export interface DriverInfoDTO {
   id: string;
+  userId: string | null;
   driverName: string;
   phone: string;
   wechat: string | null;
@@ -117,6 +118,25 @@ export interface SessionUserDTO {
   avatarUrl: string | null;
   loginMethod: "email" | "wechat";
   isAdmin: boolean;
+  role: "customer" | "driver";
+}
+
+export interface DriverBookingRequestDTO {
+  id: string;
+  departLocation: string;
+  destination: string;
+  departTime: string;
+  totalSeats: number;
+  estimatedPrice: string;
+  finalPrice: string | null;
+  customerContactType: "phone" | "wechat";
+  customerContactValue: string;
+  remark: string | null;
+  status: "pending" | "confirmed" | "rejected";
+  carpoolOrderId: string | null;
+  createdAt: string;
+  customer?: { id: string; nickname: string; email: string | null };
+  driver?: DriverInfoDTO;
 }
 
 export interface MerchantPromotionDTO {
