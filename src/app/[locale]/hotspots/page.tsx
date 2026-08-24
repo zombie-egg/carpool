@@ -32,13 +32,23 @@ export default function HotspotsPage() {
     setLoading(true);
     setLoadError(false);
     try {
+      const cached = window.sessionStorage.getItem("lian-promotions");
+      if (cached) {
+        const parsed = JSON.parse(cached) as { merchants: MerchantPromotionDTO[]; vip: VipAdvertisementDTO[] };
+        setMerchants(parsed.merchants); setVipItems(parsed.vip); setLoading(false);
+      }
+    } catch { /* ignore stale cache */ }
+    try {
       const [merchantResponse, vipResponse] = await Promise.all([
         fetch("/api/promotions/merchants", { cache: "force-cache" }),
         fetch("/api/promotions/vip", { cache: "force-cache" }),
       ]);
       if (!merchantResponse.ok || !vipResponse.ok) throw new Error("load_failed");
-      setMerchants((await merchantResponse.json()) as MerchantPromotionDTO[]);
-      setVipItems((await vipResponse.json()) as VipAdvertisementDTO[]);
+      const merchants = (await merchantResponse.json()) as MerchantPromotionDTO[];
+      setMerchants(merchants);
+      const vip = (await vipResponse.json()) as VipAdvertisementDTO[];
+      setVipItems(vip);
+      try { window.sessionStorage.setItem("lian-promotions", JSON.stringify({ merchants, vip })); } catch { /* ignore quota */ }
     } catch {
       setLoadError(true);
     } finally {
@@ -85,8 +95,8 @@ export default function HotspotsPage() {
             return (
               <Card key={merchant.id} role="button" tabIndex={0} onClick={() => setSelectedMerchant(merchant)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setSelectedMerchant(merchant); }} className="group flex h-[28rem] cursor-pointer flex-col overflow-hidden border-border bg-card/75 backdrop-blur transition-transform hover:-translate-y-1 hover:shadow-xl">
                 <div className="relative mx-4 mt-4 h-56 shrink-0">
-                  {stackedPosters.map((poster, index) => <img key={poster} src={poster} alt="" className="absolute inset-x-3 h-full w-[calc(100%-1.5rem)] rounded-xl border border-border object-cover shadow-md" style={{ top: `${(stackedPosters.length - index) * 5}px`, transform: `rotate(${index % 2 === 0 ? -1.5 : 1.5}deg)` }} />)}
-                  {cover ? <img src={cover} alt={t("posterAlt", { merchant: merchant.merchantName, index: coverIndex + 1 })} className="relative z-10 h-[calc(100%-1rem)] w-full rounded-xl border border-border object-cover shadow-lg" /> : <div className="relative z-10 flex h-[calc(100%-1rem)] items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground"><Images className="h-10 w-10" /></div>}
+                  {stackedPosters.map((poster, index) => <img loading="lazy" decoding="async" key={poster} src={poster} alt="" className="absolute inset-x-3 h-full w-[calc(100%-1.5rem)] rounded-xl border border-border object-cover shadow-md" style={{ top: `${(stackedPosters.length - index) * 5}px`, transform: `rotate(${index % 2 === 0 ? -1.5 : 1.5}deg)` }} />)}
+                  {cover ? <img loading="lazy" decoding="async" src={cover} alt={t("posterAlt", { merchant: merchant.merchantName, index: coverIndex + 1 })} className="relative z-10 h-[calc(100%-1rem)] w-full rounded-xl border border-border object-cover shadow-lg" /> : <div className="relative z-10 flex h-[calc(100%-1rem)] items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground"><Images className="h-10 w-10" /></div>}
                   {posters.length > 1 && <span className="absolute bottom-5 right-2 z-20 rounded-full bg-black/65 px-2 py-1 text-xs text-white">{t("imageCount", { count: posters.length })}</span>}
                 </div>
                 <CardHeader className="min-h-0 flex-1 pb-5 pt-2">

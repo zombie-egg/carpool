@@ -13,6 +13,7 @@ export function VipAdCarousel() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    try { const cached = window.sessionStorage.getItem("lian-vip"); if (cached) { setItems(JSON.parse(cached) as VipAdvertisementDTO[]); setLoading(false); } } catch { /* ignore */ }
     try {
       const response = await fetch("/api/promotions/vip", { cache: "force-cache" });
       if (response.ok) {
@@ -30,6 +31,7 @@ export function VipAdCarousel() {
           )
         );
         setItems(imageAdvertisements);
+        try { window.sessionStorage.setItem("lian-vip", JSON.stringify(imageAdvertisements)); } catch { /* ignore quota */ }
       }
     } finally {
       setLoading(false);
@@ -66,7 +68,7 @@ export function VipAdCarousel() {
             className="absolute inset-0 h-full w-full"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={active.imageData || ""} alt={t("vipImageAlt")} className="h-full w-full object-contain" />
+            <img loading="eager" decoding="async" src={active.imageData || ""} alt={t("vipImageAlt")} className="h-full w-full object-contain" />
             <span className="absolute bottom-1.5 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] text-white">
               {t("vipCounter", { current: index + 1, total: items.length })}
             </span>
