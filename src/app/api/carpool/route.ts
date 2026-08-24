@@ -70,11 +70,13 @@ export async function GET(request: NextRequest) {
     }
 
     const user = await getSessionUser();
-    let where = { status: "recruiting", hiddenByOrganizer: false, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] } as Record<string, unknown>;
+    // Public trips include recruiting, full and confirmed platform-driver trips;
+    // only expired/finished/cancelled or mutually deleted trips are hidden.
+    let where = { status: { notIn: ["finished", "cancelled"] }, departTime: { gte: new Date() }, hiddenByOrganizer: false, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] } as Record<string, unknown>;
     if (user?.isAdmin) {
       where = {};
     } else if (user?.role === "driver") {
-      where = { driverRequest: { driver: { userId: user.id } }, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] };
+      where = { driverRequest: { driver: { userId: user.id } }, status: { notIn: ["finished", "cancelled"] }, departTime: { gte: new Date() }, OR: [{ deletedByCustomer: false }, { deletedByDriver: false }] };
     }
     const orders = await prisma.carpoolOrder.findMany({ where, orderBy: { createdAt: "desc" } });
     return NextResponse.json(orders);
