@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const configuredOrigin = process.env.APP_URL?.trim();
   const publicOrigin = (configuredOrigin && !/localhost|127\.0\.0\.1/i.test(configuredOrigin)
     ? configuredOrigin
-    : "https://carpools.zeabur.app").replace(/\/$/, "");
+    : "https://ww.sogoai.top").replace(/\/$/, "");
   const callbackUrl = new URL(`${publicOrigin}/api/auth/wechat/callback`);
   callbackUrl.searchParams.set("locale", locale);
   if (ticket) callbackUrl.searchParams.set("ticket", ticket);

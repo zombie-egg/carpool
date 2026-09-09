@@ -15,7 +15,7 @@ function publicOrigin(request: NextRequest) {
       ? configuredOrigin
       : !/localhost|127\.0\.0\.1/i.test(requestOrigin)
         ? requestOrigin
-        : "https://carpools.zeabur.app";
+        : "https://ww.sogoai.top";
   return origin.replace(/\/$/, "");
 }
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   const configuredOrigin = process.env.APP_URL?.trim();
   const origin = (configuredOrigin && !/localhost|127\.0\.0\.1/i.test(configuredOrigin)
     ? configuredOrigin
-    : "https://carpools.zeabur.app").replace(/\/$/, "");
+    : "https://ww.sogoai.top").replace(/\/$/, "");
   const nonce = randomBytes(24).toString("hex");
   const state = `${nonce}.${signState(nonce)}`;
   const callback = new URL(`${origin}/api/auth/wechat/callback`);
