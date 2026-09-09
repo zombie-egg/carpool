@@ -7,6 +7,18 @@ export const dynamic = "force-dynamic";
 
 const STATE_COOKIE = "wechat_oauth_state";
 
+function publicOrigin(request: NextRequest) {
+  const configuredOrigin = process.env.APP_URL?.trim();
+  const requestOrigin = request.nextUrl.origin;
+  const origin =
+    configuredOrigin && !/localhost|127\.0\.0\.1/i.test(configuredOrigin)
+      ? configuredOrigin
+      : !/localhost|127\.0\.0\.1/i.test(requestOrigin)
+        ? requestOrigin
+        : "https://carpools.zeabur.app";
+  return origin.replace(/\/$/, "");
+}
+
 function validSignedState(value: string | null) {
   if (!value) return false;
   const [nonce, signature] = value.split(".");
@@ -71,13 +83,13 @@ function qrSuccessResponse(locale: string, userId: string) {
 }
 
 function loginRedirect(request: NextRequest, locale: string, error?: string) {
-  const url = new URL(`/${locale}/login`, request.nextUrl.origin);
+  const url = new URL(`/${locale}/login`, publicOrigin(request));
   if (error) url.searchParams.set("wechatError", error);
   return NextResponse.redirect(url);
 }
 
 function registrationRedirect(request: NextRequest, locale: string, token: string) {
-  const url = new URL(`/${locale}/register`, request.nextUrl.origin);
+  const url = new URL(`/${locale}/register`, publicOrigin(request));
   url.searchParams.set("wechatTicket", token);
   const response = NextResponse.redirect(url);
   response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
@@ -137,7 +149,7 @@ export async function GET(request: NextRequest) {
       const created = await prisma.user.create({ data: { wechatOpenId: profile.openid, nickname: profile.nickname?.trim() || `微信用户${profile.openid.slice(-6)}`, avatarUrl: profile.headimgurl || null, role: "customer", roleChosen: false } });
       if (ticket) await prisma.wechatLoginTicket.updateMany({ where: { token: ticket, status: "pending" }, data: { status: "authorized", userId: created.id } });
       setSessionCookie(created.id);
-      return NextResponse.redirect(new URL(`/${locale}/register?wechatRole=1`, request.nextUrl.origin));
+      return NextResponse.redirect(new URL(`/${locale}/register?wechatRole=1`, publicOrigin(request)));
     }
     const user = await prisma.user.update({
           where: { id: existing.id },
@@ -171,7 +183,7 @@ export async function GET(request: NextRequest) {
 
     setSessionCookie(user.id);
     const response = NextResponse.redirect(
-      new URL(returnTo, request.nextUrl.origin)
+      new URL(returnTo, publicOrigin(request))
     );
     response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
     return response;
